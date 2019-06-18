@@ -1,0 +1,8 @@
+<RCC>
+    <qresource prefix="/myresources">
+        <file alias="titleicon.png">icons/icon.png</file>
+        <file alias="call.png">icons/call.png</file>
+        <file alias="connection.png">icons/connection.png</file>
+        <file alias="send.png">icons/send.png</file>
+    </qresource>
+</RCC>
