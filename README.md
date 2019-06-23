@@ -1,4 +1,4 @@
 # QBroadcastMessenger
 Messenger using broadcasting to send messages
 
-QtNetwork
+Contributors: @[Exterminant](https://github.com/Exterminant)
