@@ -26,15 +26,18 @@ DEFINES += QT_DEPRECATED_WARNINGS
 CONFIG += c++11
 
 SOURCES += \
-        broadcastingservice.cpp \
+    imanager.cpp \
         main.cpp \
         mainwindow.cpp \
-    connection.cpp
+    connectionmanager.cpp \
+    client.cpp
 
 HEADERS += \
-        broadcastingservice.h \
         mainwindow.h \
-    connection.h
+    connectionmanager.h \
+    client.h \
+    iclient.h \
+    imanager.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

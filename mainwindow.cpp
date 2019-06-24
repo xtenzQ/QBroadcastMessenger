@@ -1,5 +1,4 @@
 #include "mainwindow.h"
-#include <QtWidgets>
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
@@ -11,7 +10,7 @@ MainWindow::MainWindow(QWidget *parent)
     // Specifying the basic widget
     // we have to do it because this is the thing
     // all the widgets are located in
-    QWidget *basicWidget = new QWidget(this);
+    basicWidget = new QWidget(this);
 
     // TITLE
     // Set icon from myresources (check resources.qrc)
@@ -39,26 +38,26 @@ MainWindow::MainWindow(QWidget *parent)
      */
 
     // VERTICAL LAYOUT
-    QVBoxLayout *basicLayout = new QVBoxLayout;
+    basicLayout = new QVBoxLayout;
     basicLayout->setMargin(0);
 
     // MIDDLE CHAT LAYOUT
-    QHBoxLayout *chatLayout = new QHBoxLayout;
+    chatLayout = new QHBoxLayout;
     chatLayout->setContentsMargins(5, 0, 5, 0);
 
     // BOTTOM MESSAGE MANAGER LAYOUT
-    QHBoxLayout *messageLayout = new QHBoxLayout;
+    messageLayout = new QHBoxLayout;
     messageLayout->setContentsMargins(5, 0, 5, 5);
 
     // MENU BAR
-    QMenuBar *menuBar = new QMenuBar;
+    menuBar = new QMenuBar;
     menuBar->addMenu(tr("&Connection"));
     // I do like CSS so thanks Qt for given opportunity haha
     menuBar->setStyleSheet("background-color: transparent;");
 
     // TEXTS
     // The biggest text area in application to display messages
-    QTextEdit *messageTextEdit = new QTextEdit;
+    messageTextEdit = new QTextEdit;
     messageTextEdit->setMinimumWidth(400);
     // since it's message history no one should be able to edit it
     messageTextEdit->setReadOnly(true);
@@ -66,24 +65,24 @@ MainWindow::MainWindow(QWidget *parent)
 
     // The list of people joined the chat
     // located on the right side
-    QTextEdit *chatListTextEdit = new QTextEdit;
+    chatListTextEdit = new QTextEdit;
     chatListTextEdit->setMinimumWidth(200);
     chatListTextEdit->setFocusPolicy(Qt::NoFocus);
 
     // The box to type messages
-    QTextEdit *messageLineEdit = new QTextEdit;
+    messageLineEdit = new QTextEdit;
     messageLineEdit->setStyleSheet("min-height: 15px;");
     // the first widget to get focus
     messageLineEdit->setFocusPolicy(Qt::StrongFocus);
 
     // BUTTONS
     // Button to send messages
-    QPushButton *sendButton = new QPushButton;
+    sendButton = new QPushButton;
     sendButton->setIcon(QIcon(QStringLiteral(":/myresources/send.png")));
     sendButton->setStyleSheet("border: 0; background-color: transparent; margin: 0 10;");
 
     // Button to call
-    QPushButton *callButton = new QPushButton;
+    callButton = new QPushButton;
     callButton->setIcon(QIcon(QStringLiteral(":/myresources/call.png")));
     callButton->setStyleSheet("border: 0; background-color: transparent; margin: 0 10;");
 
@@ -91,7 +90,7 @@ MainWindow::MainWindow(QWidget *parent)
     // 1. MessageBox
     // 2. Send button
     // 3. Call button
-    QWidget *bottomLine = new QWidget();
+    bottomLine = new QWidget();
     messageLayout->addWidget(messageLineEdit);
     messageLayout->addWidget(sendButton);
     messageLayout->addWidget(callButton);
@@ -101,7 +100,7 @@ MainWindow::MainWindow(QWidget *parent)
     // consits of
     // 1. MessageTextBox (on the left)
     // 2. chatListTextBox (on the right)
-    QSplitter *chatSplitter = new QSplitter;
+    chatSplitter = new QSplitter;
     chatSplitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     chatSplitter->addWidget(messageTextEdit);
     chatSplitter->addWidget(chatListTextEdit);
@@ -110,7 +109,7 @@ MainWindow::MainWindow(QWidget *parent)
     // consits of
     // 1. chatSplitter on top
     // 2. Bottom widget on bottom
-    QSplitter *messageSplitter = new QSplitter;
+    messageSplitter = new QSplitter;
     // setting vertical orientation because default is horizontal
     messageSplitter->setOrientation(Qt::Vertical);
     messageSplitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
@@ -130,6 +129,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     // writing comments is like talking with myself
     // but I hope it will help you
+
+    manager = &ConnectionManager::GetInstance();
 }
 
 MainWindow::~MainWindow()
