@@ -1,6 +1,7 @@
 #ifndef IMANAGER_H
 #define IMANAGER_H
-#include <QVector>
+#include <QtWidgets>
+#include <QtNetwork>
 
 class IClient;
 /**
@@ -14,13 +15,13 @@ public:
      * Register new client
      * @brief addClient client object to be registered
      */
-    virtual void addClient(IClient *) = 0;
+    virtual void addClient(QHostAddress *, QString *) = 0;
 
     /**
      * Remove existing client
      * @brief removeClient client object to be unregistered
      */
-    virtual void removeClient (IClient *) = 0;
+    virtual void removeClient (QHostAddress *) = 0;
 
     /**
      * @brief notify

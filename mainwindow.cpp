@@ -129,9 +129,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     // writing comments is like talking with myself
     // but I hope it will help you
+    manager = new ConnectionManager(messageLineEdit, messageTextEdit, chatListTextEdit);
 
-    manager = &ConnectionManager::GetInstance();
 }
+
 
 MainWindow::~MainWindow()
 {

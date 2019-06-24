@@ -10,14 +10,14 @@ class Client : public IClient, QObject
     Q_OBJECT
 public:
     Client(QString *user, QHostAddress *address);
-private:
     QString *username;
     QHostAddress *ip;
     int time;
-    QTimer *timer;
+    QString getUsername();
 private slots:
     void removeMe();
     void resetTimer();
+
 };
 
 #endif // CLIENT_H

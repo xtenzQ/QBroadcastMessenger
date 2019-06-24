@@ -18,7 +18,7 @@ public:
     QHBoxLayout *messageLayout;
     QMenuBar *menuBar;
     QTextEdit *messageTextEdit;
-    QTextEdit *chatListTextEdit;
+    QListWidget *chatListTextEdit;
     QTextEdit *messageLineEdit;
     QPushButton *sendButton;
     QPushButton *callButton;
@@ -26,6 +26,11 @@ public:
     QSplitter *chatSplitter;
     QSplitter *messageSplitter;
     ConnectionManager *manager;
+
+    QString *messages;
+    QString *myMessage;
+
+    void displayMessage(QString *msg);
 };
 
 #endif // MAINWINDOW_H

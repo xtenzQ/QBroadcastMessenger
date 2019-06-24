@@ -1,33 +1,39 @@
 #include "connectionmanager.h"
 
-ConnectionManager::ConnectionManager()
+ConnectionManager::ConnectionManager(QTextEdit *messageLineEdit, QTextEdit *messageTextEdit, QListWidget *chatListTextEdit)
 {
+    myMessageTextEdit = messageLineEdit;
+    messagesTextEdit = messageTextEdit;
+    chatters = chatListTextEdit;
     udpSocket = new QUdpSocket();
     udpSocket->bind(14000, QUdpSocket::ShareAddress);
+    timer = new QTimer(this);
+    timer->setInterval(2000);
+    timer->start();
+
+    connect(udpSocket, &QUdpSocket::readyRead,
+            this, &ConnectionManager::datagramListener);
+    connect(timer, &QTimer::timeout, this, &ConnectionManager::checkAlive);
 }
 
 /**
  * @brief Add client to clients list
  * @param client IClient entity
  */
-void ConnectionManager::addClient(IClient *client) {
-    clients.push_back(client);
+void ConnectionManager::addClient(QHostAddress *ip, QString *nick) {
+    chattersList.insert(*ip, *nick);
+    timeList.insert(*ip, 0);
+    refreshChatters();
 }
 
 /**
  * @brief Remove client from clients list
  * @param client IClient entity
  */
-void ConnectionManager::removeClient(IClient *client) {
-    int count = clients.size();
-    int i;
-
-    for (i = 0; i < count; i++) {
-      if(clients[i] == client)
-      break;
-    }
-    if(i < count)
-     clients.erase(clients.begin() + i);
+void ConnectionManager::removeClient(QHostAddress *ip) {
+    chattersList.remove(*ip);
+    timeList.remove(*ip);
+    refreshChatters();
 }
 
 void ConnectionManager::notify(IClient *) {
@@ -79,47 +85,144 @@ void ConnectionManager::datagramListener() {
             if (prCommand == P_CONNECT)
             {
                 if (lengthValidator(prLength, prPayload)) {
-                    new Client(&prPayload, &senderIP);
-                }
-                if (data.split(sep)[2].toInt() == data.split(sep)[3].length())
-                {
-                    //addMessage(tr("%1 присоединился").arg(data.split("_")[3]), true);
-                    //refreshListWidget();
+                    // add client to QHash
+                    addClient(&senderIP, &prPayload);
+                    displayServiceMessage(tr("%1 has joined").arg(prPayload));
                 }
             }
-            else if (data.split("_")[1] == P_SENDMESSAGE)
+            // if the incoming datagram contains message
+            else if (prCommand == P_SENDMESSAGE)
             {
-                if (data.split("_")[2].toInt() == data.split("_")[3].length())
+                if (lengthValidator(prLength, prPayload))
                 {
-                    //textEditMessages->append(tr("%1 : %2").arg(userList.value(senderIP.toString().split("::ffff:")[1]), data.split("_")[3]));
-                    //addMessage(tr("%1 : %2").arg(userList.value(senderIP.toString().split("::ffff:")[1]), data.split("_")[3]), false);
+                    displayTextMessage(tr("%1 : %2").arg(chattersList.value(senderIP), prPayload));
                 }
             }
-            else if (data.split("_")[1] == P_PRIVATEMSG)
+            // if incoming datagram is a ping
+            else if (prCommand == P_ALIVE)
             {
-                //...
-            }
-            else if (data.split("_")[1] == P_ALIVE)
-            {
-                if (data.split("_")[2].toInt() == data.split("_")[3].length())
+                if (lengthValidator(prLength, prPayload))
                 {
-                    /*if (userList.contains(senderIP.toString().split("::ffff:")[1]))
+                    // check if ping incoming from existing client
+                    if (chattersList.contains(senderIP))
                     {
-                        if (timeList.value(senderIP.toString().split("::ffff:")[1]) > 0) {
-                            int newTime = timeList.value(senderIP.toString().split("::ffff:")[1]) - 1;
-                            timeList[senderIP.toString().split("::ffff:")[1]] = newTime;
+                        if (timeList.value(senderIP) > 0) {
+                            timeList[senderIP] = timeList.value(senderIP) - 1;
                         }
                     }
+                    // or add new client to list and show him in chat
                     else
                     {
-                        userList.insert(senderIP.toString().split("::ffff:")[1], data.split("_")[3]);
-                        timeList.insert(senderIP.toString().split("::ffff:")[1], 0);
-                        addMessage(tr("%1 в чате").arg(data.split("_")[3]), true);
-                        refreshListWidget();
-                    }*/
+                        addClient(&senderIP, &prPayload);
+                        displayServiceMessage(tr("%1 in chat").arg(prPayload));
+                    }
                 }
             }
         }
-        //textEditMessages->append(data);
     }
 }
+
+/**
+ * @brief Check pings to reset timers
+ */
+void ConnectionManager::ping()
+{
+    // Not the best decision actually but I failed to implement subject-observer pattern
+    // (not idea how to avoid circular dependency) :(
+    // maybe, someday...
+    foreach (int time, timeList.values())
+    {
+        QHostAddress address = timeList.key(time);
+        if (time > 2)
+        {
+            displayServiceMessage(tr("%1 left chat").arg(chattersList.value(address)));
+            removeClient(&address);
+        }
+        else
+        {
+            timeList[address] = time++;
+        }
+    }
+}
+
+/**
+ * @brief Displays gray-colored message
+ * @param msg message
+ */
+void ConnectionManager::displayServiceMessage(QString msg) {
+    messagesTextEdit->setTextColor(QColor(Qt::gray));
+    messagesTextEdit->append(msg);
+}
+
+/**
+ * @brief Displays default message
+ * @param msg
+ */
+void ConnectionManager::displayTextMessage(QString msg) {
+    messagesTextEdit->setTextColor(QColor(Qt::black));
+    messagesTextEdit->append(msg);
+}
+
+/**
+ * @brief ConnectionManager::refreshChatters
+ */
+void ConnectionManager::refreshChatters() {
+    chatters->clear();
+    foreach (QString item, chattersList)
+    {
+        chatters->addItem(item);
+    }
+}
+
+bool ConnectionManager::isEmpty()
+{
+    if ((lineEditName->text().isEmpty() && lineEditName->isEnabled() == true) || (lineEditMessage->text().isEmpty() && lineEditMessage->isEnabled() == true)) {
+        return true;
+    }
+    return false;
+}
+
+void ConnectionManager::clearMessage()
+{
+    lineEditMessage->clear();
+}
+
+void Sender::sendMessage()
+{
+    if (!isEmpty())
+    {
+        if (firstTime == true) {
+            sendGreeting();
+            firstTime = false;
+            lineEditName->setEnabled(firstTime);
+            lineEditMessage->setEnabled(!firstTime);
+            buttonSend->setText("Отправить");
+            timer->start();
+        }
+        else {
+            QString message = lineEditMessage->text();
+            QString len = QString::number(message.length());
+            QByteArray datagram = (P_SENDMESSAGE + len + P_DIVIDER + message).toUtf8();
+            udpSocket->writeDatagram(datagram, QHostAddress("10.24.34.181"), 14000); //172.27.24.255 192.168.0.104
+            clearMessage();
+        }
+    }
+}
+
+
+void ConnectionManager::sendGreeting()
+{
+    QString name = lineEditName->text();
+    QString len = QString::number(name.length());
+    QByteArray datagram = (P_CONNECT + len + P_DIVIDER + name).toUtf8();
+    udpSocket->writeDatagram(datagram, QHostAddress("10.24.34.181"), 14000);
+}
+
+void ConnectionManager::sendAlive()
+{
+    QString name = lineEditName->text();
+    QString len = QString::number(name.length());
+    QByteArray datagram = (P_ALIVE + len + P_DIVIDER + name).toUtf8();
+    udpSocket->writeDatagram(datagram, QHostAddress("10.24.34.181"), 14000);
+}
+
