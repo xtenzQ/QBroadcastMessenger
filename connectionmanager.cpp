@@ -99,6 +99,7 @@ void ConnectionManager::datagramListener() {
                     // add client to QHash
                     new Client(this, prPayload, senderIP);
                     displayServiceMessage(tr("%1 has joined").arg(prPayload));
+                    refreshChatters();
                 }
             }
             // if the incoming datagram contains message
@@ -106,52 +107,25 @@ void ConnectionManager::datagramListener() {
             {
                 if (lengthValidator(prLength, prPayload))
                 {
-                    displayTextMessage(tr("%1 : %2").arg(chattersList.value(senderIP), prPayload));
+                    displayTextMessage(tr("<%1>s : %2").arg(chattersList.value(senderIP), prPayload));
                 }
             }
             // if incoming datagram is a ping
-            else if (prCommand == P_ALIVE)
-            {
-                if (lengthValidator(prLength, prPayload))
-                {
-                    // check if ping incoming from existing client
-                    if (chattersList.contains(senderIP))
-                    {
-                        if (timeList.value(senderIP) > 0) {
-                            timeList[senderIP] = timeList.value(senderIP) - 1;
+            else if (prCommand == P_ALIVE) {
+                if (lengthValidator(prLength, prPayload)) {
+                    foreach (IClient *client, clients) {
+                        if (client->getIP() == senderIP) {
+                            client->resetTimer();
                         }
                     }
-                    // or add new client to list and show him in chat
-                    else
-                    {
-                        addClient(&senderIP, &prPayload);
-                        displayServiceMessage(tr("%1 in chat").arg(prPayload));
-                    }
+                }
+                // or add new client to list and show him in chat
+                else {
+                    new Client(this, prPayload, senderIP);
+                    displayServiceMessage(tr("%1 in chat").arg(prPayload));
+                    refreshChatters();
                 }
             }
-        }
-    }
-}
-
-/**
- * @brief Check pings to reset timers
- */
-void ConnectionManager::ping()
-{
-    // Not the best decision actually but I failed to implement subject-observer pattern
-    // (not idea how to avoid circular dependency) :(
-    // maybe, someday...
-    foreach (int time, timeList.values())
-    {
-        QHostAddress address = timeList.key(time);
-        if (time > 2)
-        {
-            displayServiceMessage(tr("%1 left chat").arg(chattersList.value(address)));
-            removeClient(&address);
-        }
-        else
-        {
-            timeList[address] = time++;
         }
     }
 }

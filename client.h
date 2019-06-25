@@ -16,18 +16,22 @@ class Client : public IClient, QObject
     Q_OBJECT
 public:
     Client(ConnectionManager *manager, QString username, QHostAddress address);
+
+    QString getUsername() override { return username; }
+    QHostAddress getIP() override { return address; }
+    void resetTimer() override;
+private slots:
+    ConnectionManager *manager;
+    void removeMe();
+private:
     // username
     QString username;
     // IPv4 address
     QHostAddress address;
-    // timer deletion
-    int time;
-private slots:
-    ConnectionManager *manager;
-    void removeMe();
-    void resetTimer();
-private:
+    //
     QTimer *timer;
 };
+
+
 
 #endif // CLIENT_H

@@ -16,6 +16,7 @@ Client::Client(ConnectionManager *manager, QString username, QHostAddress addres
 
     // add client to list
     this->manager->addClient(this);
+    this->manager->refreshChatters();
 
     // timer to remove
     timer = new QTimer(this);
@@ -41,6 +42,7 @@ void Client::update() {
  */
 void Client::removeMe() {
     manager->removeClient(this);
+    manager->refreshChatters();
 }
 
 void Client::display() {
