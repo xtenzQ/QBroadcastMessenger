@@ -29,14 +29,14 @@ SOURCES += \
         main.cpp \
         mainwindow.cpp \
     connectionmanager.cpp \
-    client.cpp
+    client.cpp \
+    settingswindow.cpp
 
 HEADERS += \
         mainwindow.h \
     connectionmanager.h \
     client.h \
-    iclient.h \
-    imanager.h
+    settingswindow.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

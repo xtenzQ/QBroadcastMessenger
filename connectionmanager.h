@@ -1,7 +1,6 @@
 #ifndef CONNECTIONMANAGER_H
 #define CONNECTIONMANAGER_H
 
-#include "imanager.h"
 #include "client.h"
 #include "mainwindow.h"
 #include <QtWidgets>
@@ -13,34 +12,25 @@ class Client;
 /*
  * @brief A concrete implementation of the Manager interface
  */
-class ConnectionManager : public IManager
+class ConnectionManager : public QObject
 {
     Q_OBJECT
 
 public:
     ConnectionManager(MainWindow *window);
-    /*
-    static ConnectionManager &GetInstance() {
-        static ConnectionManager instance;
-        return instance;
-    }*/
     // clients
-    QVector<IClient *> clients;
+    QVector<Client *> clients;
 
 public slots:
-    void addClient(IClient *client) override;
-    void removeClient(IClient *client) override;
-    void sendMessage(QString *message) override;
-    //void setTimer();
+    void addClient(Client *client);
+    void removeClient(Client *client);
+    void sendMessage(QString *message);
     void sendMessage(QString msg);
 
 
 private slots:
     void datagramListener();
-    //void checkTime();
     bool lengthValidator(int length, QString string);
-    //void displayServiceMessage(QString);
-    //void displayTextMessage(QString);
     void refreshChatters();
     void ping();
     void sayHi();
@@ -69,7 +59,7 @@ private:
     const char sep = '_';
     bool flag = true;
 
-    const QString destinationIP = "10.24.34.181";
+    const QString destinationIP = "192.168.0.255";
     QTimer *timer;
 };
 

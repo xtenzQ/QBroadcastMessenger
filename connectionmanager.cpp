@@ -18,7 +18,7 @@ ConnectionManager::ConnectionManager(MainWindow *window)
  * @brief Add client to clients list
  * @param client IClient entity
  */
-void ConnectionManager::addClient(IClient *client) {
+void ConnectionManager::addClient(Client *client) {
     clients.push_back(client);
     refreshChatters();
 }
@@ -27,7 +27,7 @@ void ConnectionManager::addClient(IClient *client) {
  * @brief Remove client from clients list
  * @param client IClient entity
  */
-void ConnectionManager::removeClient(IClient *client) {
+void ConnectionManager::removeClient(Client *client) {
 
     auto iterator = std::find(clients.begin(), clients.end(), client);
 
@@ -104,7 +104,7 @@ void ConnectionManager::datagramListener() {
             // if incoming datagram is a ping
             else if (prCommand == P_ALIVE) {
                 if (lengthValidator(prLength, prPayload)) {
-                    foreach (IClient *client, clients) {
+                    foreach (Client *client, clients) {
                         if (client->getIP() == senderIP) {
                             client->resetTimer();
                         }
@@ -126,7 +126,7 @@ void ConnectionManager::datagramListener() {
  */
 void ConnectionManager::refreshChatters() {
     QStringList *list = new QStringList;
-    foreach (IClient *client, clients)
+    foreach (Client *client, clients)
     {
         list->append(client->getUsername());
     }
