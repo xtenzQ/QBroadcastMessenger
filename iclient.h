@@ -8,7 +8,8 @@ class IClient
 {
 
 public:
-    virtual void update();
+    virtual void message();
+
 };
 
 #endif // ICLIENT_H

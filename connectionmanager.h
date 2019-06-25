@@ -6,7 +6,7 @@
 #include "imanager.h"
 #include "client.h"
 
-class MainWindow;
+class Client;
 
 /*
  * @brief A concrete implementation of the Manager interface
@@ -23,12 +23,12 @@ public:
         return instance;
     }*/
     // clients
-    QHash<QHostAddress, IClient *> clients;
+    QVector<IClient *> clients;
 
 public slots:
-    void addClient(QHostAddress *ip, QString *nick) override;
-    void removeClient(QHostAddress *ip) override;
-    void notify(IClient *client) override;
+    void addClient(IClient *client) override;
+    void removeClient(IClient *client) override;
+    void sendMessage(QString *message) override;
     void setTimer();
 
 private slots:
@@ -52,6 +52,12 @@ private:
     const QString P_ALIVE = "ALIVE";
     const QString P_SENDMESSAGE = "SENDMSG";
     const QString P_PRIVATEMSG = "PRIVATEMSG";
+
+    // port
+    const quint16 port = 14000;
+    // response time to ping
+    const int responseTime = 2000;
+
     const char sep = '_';
 
     QTextEdit *messagesTextEdit;

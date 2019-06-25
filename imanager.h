@@ -15,21 +15,18 @@ public:
      * Register new client
      * @brief addClient client object to be registered
      */
-    virtual void addClient(QHostAddress *, QString *) = 0;
+    virtual void addClient(IClient *) = 0;
 
     /**
      * Remove existing client
      * @brief removeClient client object to be unregistered
      */
-    virtual void removeClient (QHostAddress *) = 0;
+    virtual void removeClient (IClient *) = 0;
 
     /**
      * @brief notify
      */
-    virtual void notify(IClient *) = 0;
-
-private:
-    QVector<IClient*> _clients;
+    virtual void sendMessage(QString *) = 0;
 
 };
 

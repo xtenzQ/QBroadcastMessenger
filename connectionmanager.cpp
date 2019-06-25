@@ -5,38 +5,49 @@ ConnectionManager::ConnectionManager(QTextEdit *messageLineEdit, QTextEdit *mess
     myMessageTextEdit = messageLineEdit;
     messagesTextEdit = messageTextEdit;
     chatters = chatListTextEdit;
+
     udpSocket = new QUdpSocket();
-    udpSocket->bind(14000, QUdpSocket::ShareAddress);
+    udpSocket->bind(port, QUdpSocket::ShareAddress);
+
     timer = new QTimer(this);
-    timer->setInterval(2000);
+    timer->setInterval(responseTime);
     timer->start();
 
-    connect(udpSocket, &QUdpSocket::readyRead,
-            this, &ConnectionManager::datagramListener);
-    connect(timer, &QTimer::timeout, this, &ConnectionManager::checkAlive);
+    connect(udpSocket, &QUdpSocket::readyRead, this, &ConnectionManager::datagramListener);
+    connect(timer, &QTimer::timeout, this, &ConnectionManager::ping);
 }
 
 /**
  * @brief Add client to clients list
  * @param client IClient entity
  */
-void ConnectionManager::addClient(QHostAddress *ip, QString *nick) {
-    chattersList.insert(*ip, *nick);
-    timeList.insert(*ip, 0);
+void ConnectionManager::addClient(IClient *client) {
+    clients.push_back(client);
     refreshChatters();
+    /*chattersList.insert(*ip, *nick);
+    timeList.insert(*ip, 0);
+    refreshChatters();*/
 }
 
 /**
  * @brief Remove client from clients list
  * @param client IClient entity
  */
-void ConnectionManager::removeClient(QHostAddress *ip) {
-    chattersList.remove(*ip);
-    timeList.remove(*ip);
+void ConnectionManager::removeClient(IClient *client) {
+
+    auto iterator = std::find(clients.begin(), clients.end(), client);
+
+    if (iterator != clients.end()) { // client found
+        clients.erase(iterator); // remove client
+    }
+
     refreshChatters();
+    /*chattersList.remove(*ip);
+    timeList.remove(*ip);
+    refreshChatters();*/
 }
 
-void ConnectionManager::notify(IClient *) {
+void ConnectionManager::sendMessage(QString *) {
 
 }
 
@@ -86,7 +97,7 @@ void ConnectionManager::datagramListener() {
             {
                 if (lengthValidator(prLength, prPayload)) {
                     // add client to QHash
-                    addClient(&senderIP, &prPayload);
+                    new Client(this, prPayload, senderIP);
                     displayServiceMessage(tr("%1 has joined").arg(prPayload));
                 }
             }
