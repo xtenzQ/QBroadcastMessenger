@@ -3,6 +3,7 @@
 
 #include <QtWidgets>
 #include <QMainWindow>
+#include "settingswindow.h"
 #include "connectionmanager.h"
 
 class ConnectionManager;

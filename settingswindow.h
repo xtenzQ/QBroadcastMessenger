@@ -1,6 +1,7 @@
 #ifndef SETTINGSWINDOW_H
 #define SETTINGSWINDOW_H
 
+#include <QSettings>
 #include <QtWidgets>
 #include <QWidget>
 
@@ -23,8 +24,10 @@ private:
 private slots:
     void okClicked();
     void cancelClicked();
-    //void defaultClicked();
+    void defaultClicked(bool);
 
+signals:
+    void settingsChanged();
 };
 
 #endif // SETTINGSWINDOW_H

@@ -34,13 +34,13 @@ private slots:
     void refreshChatters();
     void ping();
     void sayHi();
-
-
+    void loadSettings();
+    QString getNicknameByIP(QHostAddress address);
 private:
     MainWindow *window;
     QUdpSocket *udpSocket = nullptr;
     QTimer *ticker;
-    const QString nickname = "xtenzQ";
+    QString nickname = "xtenzQ";
 
     QHash<QHostAddress, QString> chattersList;
     QHash<QHostAddress, int> timeList;
@@ -51,15 +51,17 @@ private:
     const QString P_SENDMESSAGE = "SENDMSG";
     const QString P_PRIVATEMSG = "PRIVATEMSG";
 
+    QSettings *settings;
+
     // port
-    const quint16 port = 14000;
+    quint16 port = 14000;
     // response time to ping
     const int responseTime = 2000;
 
     const char sep = '_';
     bool flag = true;
 
-    const QString destinationIP = "192.168.0.255";
+    QString destinationIP = "127.0.0.1";
     QTimer *timer;
 };
 

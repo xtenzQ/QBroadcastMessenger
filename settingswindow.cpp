@@ -45,13 +45,34 @@ SettingsWindow::SettingsWindow(QSettings *settings, QWidget *parent=0): QDialog(
 
     setLayout(gridLayout);
 
-    this->setFixedSize(QSize(300,300));
+    this->setFixedSize(QSize(400,400));
 }
 
 void SettingsWindow::okClicked() {
-
+    settings->setValue("network/ip",ipLineEdit->text());
+    settings->setValue("network/port", portLineEdit->text());
+    settings->setValue("network/broadcast",broadcastCheckBox->isChecked());
+    settings->setValue("personal/nickname", nickLineEdit->text());
+    settings->sync();
+    emit settingsChanged();
+    close();
 }
 
 void SettingsWindow::cancelClicked() {
     close();
+}
+
+void SettingsWindow::defaultClicked(bool checked) {
+    if (checked) {
+        ipLineEdit->setText("172.27.24.255");
+        portLineEdit->setText("14000");
+        broadcastCheckBox->setChecked(true);
+        nickLineEdit->setText("KawaiiCat =^.^=");
+    }
+    else {
+        ipLineEdit->clear();
+        portLineEdit->clear();
+        broadcastCheckBox->setChecked(false);
+        nickLineEdit->clear();
+    }
 }

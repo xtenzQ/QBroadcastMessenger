@@ -1,5 +1,11 @@
 #include "connectionmanager.h"
 
+#ifdef Q_OS_WIN32
+#define _WIN32_IE 0x0400
+#include <shlobj.h>
+#undef _WIN32_IE
+#endif
+
 ConnectionManager::ConnectionManager(MainWindow *window)
 {
     this->window = window;
@@ -8,10 +14,32 @@ ConnectionManager::ConnectionManager(MainWindow *window)
     udpSocket->bind(port, QUdpSocket::ShareAddress);
     connect(udpSocket, &QUdpSocket::readyRead, this, &ConnectionManager::datagramListener);
 
+    //loadSettings();
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &ConnectionManager::ping);
     timer->setInterval(responseTime);
     timer->start();
+}
+
+void ConnectionManager::loadSettings() {
+    QString settingsPath = "./";
+
+#ifdef Q_OS_WIN32
+    wchar_t commonAppDataPath[MAX_PATH];
+    if (SHGetSpecialFolderPath(0, commonAppDataPath, CSIDL_COMMON_APPDATA, FALSE)) {
+       settingsPath = QString::fromWCharArray(commonAppDataPath)+QDir::separator()+
+               "QBroadcastMessenger"+QDir::separator();
+       if (!QDir(settingsPath).exists()) {
+           QDir(QString::fromWCharArray(commonAppDataPath)).mkpath(settingsPath);
+           }
+       }
+#endif
+
+    settings = new QSettings(settingsPath + "settings.ini", QSettings::IniFormat, this);
+
+    port = quint16(settings->value("network/port").toInt());
+    destinationIP = settings->value("network/ip").toString();
+    nickname = settings->value("personal/nickname").toString();
 }
 
 /**
@@ -35,11 +63,23 @@ void ConnectionManager::removeClient(Client *client) {
         clients.erase(iterator); // remove client
     }
 
+    window->addMessage(tr("%1 left chat").arg(client->getUsername()), Qt::gray);
     refreshChatters();
 }
 
 void ConnectionManager::sendMessage(QString *) {
 
+}
+
+QString ConnectionManager::getNicknameByIP(QHostAddress address) {
+    QString nick;
+    foreach (Client *client, clients) {
+        if (client->getIP() == address) {
+            nick = client->getUsername();
+            break;
+        }
+    }
+    return nick;
 }
 
 /**
@@ -98,7 +138,7 @@ void ConnectionManager::datagramListener() {
             {
                 if (lengthValidator(prLength, prPayload))
                 {
-                    window->addMessage(tr("<%1> : %2").arg(chattersList.value(senderIP), prPayload), Qt::black);
+                    window->addMessage(tr("<%1 | %2> : %3").arg(getNicknameByIP(senderIP), QTime::currentTime().toString(), prPayload), Qt::black);
                 }
             }
             // if incoming datagram is a ping
