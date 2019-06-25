@@ -35,5 +35,7 @@ void Client::resetTimer() {
  * @brief Removes client from list
  */
 void Client::removeMe() {
+    //timer->stop();
     manager->removeClient(this);
+    delete this;
 }
