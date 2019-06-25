@@ -2,12 +2,13 @@
 #define IMANAGER_H
 #include <QtWidgets>
 #include <QtNetwork>
+#include "iclient.h"
 
-class IClient;
 /**
  * @brief Interface for the Manager
  */
-class IManager {
+class IManager : public QObject {
+Q_OBJECT
 
 public:
 

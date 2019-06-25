@@ -2,26 +2,26 @@
 #define CLIENT_H
 
 #include "iclient.h"
-
+#include "imanager.h"
 #include <QtWidgets>
 #include <QtNetwork>
+#include "connectionmanager.h"
 
 class ConnectionManager;
 
 /**
  * @brief Concrete client
  */
-class Client : public IClient, QObject
+class Client : public IClient
 {
     Q_OBJECT
 public:
     Client(ConnectionManager *manager, QString username, QHostAddress address);
-
     QString getUsername() override { return username; }
     QHostAddress getIP() override { return address; }
+    ConnectionManager *manager;
     void resetTimer() override;
 private slots:
-    ConnectionManager *manager;
     void removeMe();
 private:
     // username
@@ -31,7 +31,5 @@ private:
     //
     QTimer *timer;
 };
-
-
 
 #endif // CLIENT_H

@@ -1,22 +1,24 @@
 #ifndef CONNECTIONMANAGER_H
 #define CONNECTIONMANAGER_H
 
-#include <QtWidgets>
-#include <QtNetwork>
 #include "imanager.h"
 #include "client.h"
+#include "mainwindow.h"
+#include <QtWidgets>
+#include <QtNetwork>
 
+class MainWindow;
 class Client;
 
 /*
  * @brief A concrete implementation of the Manager interface
  */
-class ConnectionManager : public IManager, QObject
+class ConnectionManager : public IManager
 {
     Q_OBJECT
 
 public:
-    ConnectionManager(QTextEdit *, QTextEdit *, QListWidget *);
+    ConnectionManager(MainWindow *window);
     /*
     static ConnectionManager &GetInstance() {
         static ConnectionManager instance;
@@ -29,20 +31,26 @@ public slots:
     void addClient(IClient *client) override;
     void removeClient(IClient *client) override;
     void sendMessage(QString *message) override;
-    void setTimer();
+    //void setTimer();
+    void sendMessage(QString msg);
+
 
 private slots:
     void datagramListener();
-    void checkTime();
+    //void checkTime();
     bool lengthValidator(int length, QString string);
-    void displayServiceMessage(QString);
-    void displayTextMessage(QString);
+    //void displayServiceMessage(QString);
+    //void displayTextMessage(QString);
     void refreshChatters();
     void ping();
+    void sayHi();
+
 
 private:
+    MainWindow *window;
     QUdpSocket *udpSocket = nullptr;
     QTimer *ticker;
+    const QString nickname = "xtenzQ";
 
     QHash<QHostAddress, QString> chattersList;
     QHash<QHostAddress, int> timeList;
@@ -59,11 +67,9 @@ private:
     const int responseTime = 2000;
 
     const char sep = '_';
+    bool flag = true;
 
-    QTextEdit *messagesTextEdit;
-    QTextEdit *myMessageTextEdit;
-    QListWidget *chatters;
-
+    const QString destinationIP = "10.24.34.181";
     QTimer *timer;
 };
 

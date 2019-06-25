@@ -65,9 +65,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     // The list of people joined the chat
     // located on the right side
-    chatListTextEdit = new QTextEdit;
-    chatListTextEdit->setMinimumWidth(200);
-    chatListTextEdit->setFocusPolicy(Qt::NoFocus);
+    clientsListWidget = new QListWidget;
+    clientsListWidget->setMinimumWidth(200);
+    clientsListWidget->setFocusPolicy(Qt::NoFocus);
 
     // The box to type messages
     messageLineEdit = new QTextEdit;
@@ -103,7 +103,7 @@ MainWindow::MainWindow(QWidget *parent)
     chatSplitter = new QSplitter;
     chatSplitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
     chatSplitter->addWidget(messageTextEdit);
-    chatSplitter->addWidget(chatListTextEdit);
+    chatSplitter->addWidget(clientsListWidget);
 
     // SPLITTER #2 VERTICAL
     // consits of
@@ -129,12 +129,51 @@ MainWindow::MainWindow(QWidget *parent)
 
     // writing comments is like talking with myself
     // but I hope it will help you
-    manager = new ConnectionManager(messageLineEdit, messageTextEdit, chatListTextEdit);
-
+    manager = new ConnectionManager(this);
+    connect(sendButton, SIGNAL(clicked()), this, SLOT(sendButtonClicked()));
 }
 
+/**
+ * @brief MainWindow::addMessage
+ * @param msg
+ */
+void MainWindow::addMessage(QString msg) {
+    messageTextEdit->append(msg);
+}
+
+/**
+ * @brief MainWindow::addMessage
+ * @param msg
+ * @param color
+ */
+void MainWindow::addMessage(QString msg, QColor color) {
+    messageTextEdit->setTextColor(color);
+    messageTextEdit->append(msg);
+}
+
+/**
+ * @brief MainWindow::clearMessageBox
+ */
+void MainWindow::clearMessageBox() {
+    messageTextEdit->clear();
+}
+
+/**
+ * @brief MainWindow::refreshUserList
+ * @param users
+ */
+void MainWindow::refreshUserList(QStringList *users) {
+    clientsListWidget->clear();
+    clientsListWidget->addItems(*users);
+}
+
+void MainWindow::sendButtonClicked() {
+    manager->sendMessage(messageLineEdit->toPlainText());
+    addMessage(messageLineEdit->toPlainText(), Qt::black);
+    messageLineEdit->clear();
+}
 
 MainWindow::~MainWindow()
 {
-
+    this->destroy();
 }

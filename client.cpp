@@ -1,5 +1,4 @@
 #include "client.h"
-#include "connectionmanager.h"
 
 /**
  * @brief Concrete client
@@ -16,7 +15,6 @@ Client::Client(ConnectionManager *manager, QString username, QHostAddress addres
 
     // add client to list
     this->manager->addClient(this);
-    this->manager->refreshChatters();
 
     // timer to remove
     timer = new QTimer(this);
@@ -33,18 +31,9 @@ void Client::resetTimer() {
     timer->start();
 }
 
-void Client::update() {
-
-}
-
 /**
  * @brief Removes client from list
  */
 void Client::removeMe() {
     manager->removeClient(this);
-    manager->refreshChatters();
-}
-
-void Client::display() {
-
 }

@@ -5,9 +5,7 @@
 #include <QMainWindow>
 #include "connectionmanager.h"
 
-namespace Ui {
-    class MainWindow;
-}
+class ConnectionManager;
 
 class MainWindow : public QMainWindow
 {
@@ -16,25 +14,28 @@ class MainWindow : public QMainWindow
 public:
     MainWindow(QWidget *parent = 0);
     ~MainWindow();
+    QTextEdit *messageTextEdit;
+    QListWidget *clientsListWidget;
+    QTextEdit *messageLineEdit;
+private:
     QWidget *basicWidget;
     QVBoxLayout *basicLayout;
     QHBoxLayout *chatLayout;
     QHBoxLayout *messageLayout;
     QMenuBar *menuBar;
-    QTextEdit *messageTextEdit;
-    QListWidget *chatListTextEdit;
-    QTextEdit *messageLineEdit;
+    ConnectionManager *manager;
     QPushButton *sendButton;
     QPushButton *callButton;
     QWidget *bottomLine;
     QSplitter *chatSplitter;
     QSplitter *messageSplitter;
-    ConnectionManager *manager;
-
-    QString *messages;
-    QString *myMessage;
-
-    void displayMessage(QString *msg);
+public slots:
+    void refreshUserList(QStringList *users);
+    void addMessage(QString msg);
+    void addMessage(QString msg, QColor color);
+private slots:
+    void sendButtonClicked();
+    void clearMessageBox();
 };
 
 #endif // MAINWINDOW_H

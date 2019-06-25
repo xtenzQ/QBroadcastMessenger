@@ -7,14 +7,14 @@
 /**
  * @brief Interface for the client
  */
-class IClient
+class IClient : public QObject
 {
-
+Q_OBJECT
 public:
-    virtual void message();
-    virtual QHostAddress getIP();
-    virtual QString getUsername();
-    virtual void resetTimer();
+    //virtual void message();
+    virtual QHostAddress getIP() = 0;
+    virtual QString getUsername() = 0;
+    virtual void resetTimer() = 0;
 };
 
 #endif // ICLIENT_H

@@ -1,20 +1,17 @@
 #include "connectionmanager.h"
 
-ConnectionManager::ConnectionManager(QTextEdit *messageLineEdit, QTextEdit *messageTextEdit, QListWidget *chatListTextEdit)
+ConnectionManager::ConnectionManager(MainWindow *window)
 {
-    myMessageTextEdit = messageLineEdit;
-    messagesTextEdit = messageTextEdit;
-    chatters = chatListTextEdit;
+    this->window = window;
 
     udpSocket = new QUdpSocket();
     udpSocket->bind(port, QUdpSocket::ShareAddress);
+    connect(udpSocket, &QUdpSocket::readyRead, this, &ConnectionManager::datagramListener);
 
     timer = new QTimer(this);
+    connect(timer, &QTimer::timeout, this, &ConnectionManager::ping);
     timer->setInterval(responseTime);
     timer->start();
-
-    connect(udpSocket, &QUdpSocket::readyRead, this, &ConnectionManager::datagramListener);
-    connect(timer, &QTimer::timeout, this, &ConnectionManager::ping);
 }
 
 /**
@@ -24,9 +21,6 @@ ConnectionManager::ConnectionManager(QTextEdit *messageLineEdit, QTextEdit *mess
 void ConnectionManager::addClient(IClient *client) {
     clients.push_back(client);
     refreshChatters();
-    /*chattersList.insert(*ip, *nick);
-    timeList.insert(*ip, 0);
-    refreshChatters();*/
 }
 
 /**
@@ -42,9 +36,6 @@ void ConnectionManager::removeClient(IClient *client) {
     }
 
     refreshChatters();
-    /*chattersList.remove(*ip);
-    timeList.remove(*ip);
-    refreshChatters();*/
 }
 
 void ConnectionManager::sendMessage(QString *) {
@@ -98,7 +89,7 @@ void ConnectionManager::datagramListener() {
                 if (lengthValidator(prLength, prPayload)) {
                     // add client to QHash
                     new Client(this, prPayload, senderIP);
-                    displayServiceMessage(tr("%1 has joined").arg(prPayload));
+                    window->addMessage(tr("%1 has joined").arg(prPayload), Qt::gray);
                     refreshChatters();
                 }
             }
@@ -107,7 +98,7 @@ void ConnectionManager::datagramListener() {
             {
                 if (lengthValidator(prLength, prPayload))
                 {
-                    displayTextMessage(tr("<%1>s : %2").arg(chattersList.value(senderIP), prPayload));
+                    window->addMessage(tr("<%1> : %2").arg(chattersList.value(senderIP), prPayload), Qt::black);
                 }
             }
             // if incoming datagram is a ping
@@ -122,7 +113,7 @@ void ConnectionManager::datagramListener() {
                 // or add new client to list and show him in chat
                 else {
                     new Client(this, prPayload, senderIP);
-                    displayServiceMessage(tr("%1 in chat").arg(prPayload));
+                    window->addMessage(tr("%1 in chat").arg(prPayload), Qt::gray);
                     refreshChatters();
                 }
             }
@@ -131,83 +122,43 @@ void ConnectionManager::datagramListener() {
 }
 
 /**
- * @brief Displays gray-colored message
- * @param msg message
- */
-void ConnectionManager::displayServiceMessage(QString msg) {
-    messagesTextEdit->setTextColor(QColor(Qt::gray));
-    messagesTextEdit->append(msg);
-}
-
-/**
- * @brief Displays default message
- * @param msg
- */
-void ConnectionManager::displayTextMessage(QString msg) {
-    messagesTextEdit->setTextColor(QColor(Qt::black));
-    messagesTextEdit->append(msg);
-}
-
-/**
  * @brief ConnectionManager::refreshChatters
  */
 void ConnectionManager::refreshChatters() {
-    chatters->clear();
-    foreach (QString item, chattersList)
+    QStringList *list = new QStringList;
+    foreach (IClient *client, clients)
     {
-        chatters->addItem(item);
+        list->append(client->getUsername());
     }
+    window->refreshUserList(list);
 }
 
-bool ConnectionManager::isEmpty()
+/**
+ * @brief ConnectionManager::sendMessage
+ * @param msg
+ */
+void ConnectionManager::sendMessage(QString msg)
 {
-    if ((lineEditName->text().isEmpty() && lineEditName->isEnabled() == true) || (lineEditMessage->text().isEmpty() && lineEditMessage->isEnabled() == true)) {
-        return true;
+    if (flag) {
+        sayHi();
+        flag = false;
     }
-    return false;
+    udpSocket->writeDatagram((P_TYPE + sep + P_SENDMESSAGE + sep + QString::number(msg.length()) + sep + msg).toUtf8(), QHostAddress(destinationIP), port); //172.27.24.255 192.168.0.104
 }
 
-void ConnectionManager::clearMessage()
+/**
+ * @brief ConnectionManager::sayHi
+ */
+void ConnectionManager::sayHi()
 {
-    lineEditMessage->clear();
+    udpSocket->writeDatagram((P_TYPE + sep + P_CONNECT + sep + QString::number(nickname.length()) + sep + nickname).toUtf8(), QHostAddress(destinationIP), port); //172.27.24.255 192.168.0.104
 }
 
-void Sender::sendMessage()
+/**
+ * @brief ConnectionManager::ping
+ */
+void ConnectionManager::ping()
 {
-    if (!isEmpty())
-    {
-        if (firstTime == true) {
-            sendGreeting();
-            firstTime = false;
-            lineEditName->setEnabled(firstTime);
-            lineEditMessage->setEnabled(!firstTime);
-            buttonSend->setText("Отправить");
-            timer->start();
-        }
-        else {
-            QString message = lineEditMessage->text();
-            QString len = QString::number(message.length());
-            QByteArray datagram = (P_SENDMESSAGE + len + P_DIVIDER + message).toUtf8();
-            udpSocket->writeDatagram(datagram, QHostAddress("10.24.34.181"), 14000); //172.27.24.255 192.168.0.104
-            clearMessage();
-        }
-    }
-}
-
-
-void ConnectionManager::sendGreeting()
-{
-    QString name = lineEditName->text();
-    QString len = QString::number(name.length());
-    QByteArray datagram = (P_CONNECT + len + P_DIVIDER + name).toUtf8();
-    udpSocket->writeDatagram(datagram, QHostAddress("10.24.34.181"), 14000);
-}
-
-void ConnectionManager::sendAlive()
-{
-    QString name = lineEditName->text();
-    QString len = QString::number(name.length());
-    QByteArray datagram = (P_ALIVE + len + P_DIVIDER + name).toUtf8();
-    udpSocket->writeDatagram(datagram, QHostAddress("10.24.34.181"), 14000);
+    udpSocket->writeDatagram((P_TYPE + sep + P_ALIVE + sep + QString::number(nickname.length()) + sep + nickname).toUtf8(), QHostAddress(destinationIP), port);
 }
 
