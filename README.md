@@ -9,4 +9,8 @@ The application is developed as university project at [Irkutsk National Research
 1. [IDEs and plugins used](#ides-and-plugins-used)
 
 ## IDEs and plugins used
-- **Qt Creator Community Edition** ([Download](https://www.qt.io/download))
+- **Qt Creator Community Edition** - [Download](https://www.qt.io/download)
+- **EMIPLIB** - [GitHub](https://github.com/j0r1/EMIPLIB) / [Author](https://github.com/j0r1)
+
+## Architecture
+
