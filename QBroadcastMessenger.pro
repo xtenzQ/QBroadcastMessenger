@@ -9,6 +9,15 @@ QT       += core gui \
 
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
+INCLUDEPATH += C:\libs\jrtplib\include
+INCLUDEPATH += C:\libs\jthread\include
+INCLUDEPATH += C:\libs\emiplib\include\emiplib
+
+LIBS += -L"C:\libs\jrtplib\lib" -llibjrtp
+LIBS += -L"C:\libs\jthread\lib" -llibjthread
+LIBS += -L"C:\libs\emiplib\lib" -llibemiplib
+LIBS += -lws2_32
+
 TARGET = QBroadcastMessenger
 TEMPLATE = app
 
@@ -30,13 +39,15 @@ SOURCES += \
         mainwindow.cpp \
     connectionmanager.cpp \
     client.cpp \
-    settingswindow.cpp
+    settingswindow.cpp \
+    audiosessionmodule.cpp
 
 HEADERS += \
         mainwindow.h \
     connectionmanager.h \
     client.h \
-    settingswindow.h
+    settingswindow.h \
+    audiosessionmodule.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

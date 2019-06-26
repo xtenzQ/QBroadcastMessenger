@@ -3,6 +3,8 @@
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent)
 {
+    openSettings();
+    manager = new ConnectionManager(this);
     // honestly I'm not happy to build UI via code
     // but as long as professor asks for it
     // I have no choice :)
@@ -49,9 +51,12 @@ MainWindow::MainWindow(QWidget *parent)
     messageLayout = new QHBoxLayout;
     messageLayout->setContentsMargins(5, 0, 5, 5);
 
+    // Action
+    QPushButton *settingsButton = new QPushButton(tr("Connection"));
+
     // MENU BAR
     menuBar = new QMenuBar;
-    menuBar->addMenu(tr("&Connection"));
+    //menuBar->addAction(settingsButton);
     // I do like CSS so thanks Qt for given opportunity haha
     menuBar->setStyleSheet("background-color: transparent;");
 
@@ -94,6 +99,7 @@ MainWindow::MainWindow(QWidget *parent)
     messageLayout->addWidget(messageLineEdit);
     messageLayout->addWidget(sendButton);
     messageLayout->addWidget(callButton);
+    messageLayout->addWidget(settingsButton);
     bottomLine->setLayout(messageLayout);
 
     // SPLITTER #1 HORIZONTAL
@@ -129,8 +135,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     // writing comments is like talking with myself
     // but I hope it will help you
-    manager = new ConnectionManager(this);
+
     connect(sendButton, SIGNAL(clicked()), this, SLOT(sendButtonClicked()));
+    connect(settingsButton,SIGNAL(clicked()),this,SLOT(openSettingsWindow()));
 }
 
 /**
@@ -172,6 +179,27 @@ void MainWindow::sendButtonClicked() {
     addMessage(messageLineEdit->toPlainText(), Qt::black);
     messageLineEdit->clear();
 }
+
+void MainWindow::openSettingsWindow() {
+    SettingsWindow *dialog = new SettingsWindow(settings, this);
+    dialog->show();
+    connect(dialog,SIGNAL(settingsChanged()),this,SLOT(loadSettings()));
+}
+
+/**
+ * @brief MainWindow::loadSettings
+ */
+void MainWindow::openSettings() {
+    settings = new QSettings(QDir::currentPath() + "settings.ini", QSettings::IniFormat);
+    loadSettings();
+}
+
+void MainWindow::loadSettings() {
+    port = quint16(settings->value("network/port").toInt());
+    destinationIP = settings->value("network/ip").toString();
+    nickname = settings->value("personal/nickname").toString();
+}
+
 
 MainWindow::~MainWindow()
 {

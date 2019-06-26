@@ -34,35 +34,24 @@ private slots:
     void refreshChatters();
     void ping();
     void sayHi();
-    void loadSettings();
+
     QString getNicknameByIP(QHostAddress address);
 private:
     MainWindow *window;
     QUdpSocket *udpSocket = nullptr;
     QTimer *ticker;
-    QString nickname = "xtenzQ";
-
     QHash<QHostAddress, QString> chattersList;
     QHash<QHostAddress, int> timeList;
-
     const QString P_TYPE = "EVMp";
     const QString P_CONNECT = "CONNECT";
     const QString P_ALIVE = "ALIVE";
     const QString P_SENDMESSAGE = "SENDMSG";
     const QString P_PRIVATEMSG = "PRIVATEMSG";
-
-    QSettings *settings;
-
-    // port
-    quint16 port = 14000;
-    // response time to ping
-    const int responseTime = 2000;
-
     const char sep = '_';
-    bool flag = true;
-
-    QString destinationIP = "127.0.0.1";
+    bool flag = true;  
     QTimer *timer;
+
+
 };
 
 #endif // CONNECTIONMANAGER_H

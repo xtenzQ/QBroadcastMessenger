@@ -37,5 +37,6 @@ void Client::resetTimer() {
 void Client::removeMe() {
     //timer->stop();
     manager->removeClient(this);
+    // TODO: review later
     delete this;
 }

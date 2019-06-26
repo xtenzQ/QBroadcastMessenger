@@ -1,45 +1,16 @@
 #include "connectionmanager.h"
 
-#ifdef Q_OS_WIN32
-#define _WIN32_IE 0x0400
-#include <shlobj.h>
-#undef _WIN32_IE
-#endif
-
 ConnectionManager::ConnectionManager(MainWindow *window)
 {
     this->window = window;
 
     udpSocket = new QUdpSocket();
-    udpSocket->bind(port, QUdpSocket::ShareAddress);
+    udpSocket->bind(window->port, QUdpSocket::ShareAddress);
     connect(udpSocket, &QUdpSocket::readyRead, this, &ConnectionManager::datagramListener);
-
-    //loadSettings();
     timer = new QTimer(this);
     connect(timer, &QTimer::timeout, this, &ConnectionManager::ping);
-    timer->setInterval(responseTime);
+    timer->setInterval(window->responseTime);
     timer->start();
-}
-
-void ConnectionManager::loadSettings() {
-    QString settingsPath = "./";
-
-#ifdef Q_OS_WIN32
-    wchar_t commonAppDataPath[MAX_PATH];
-    if (SHGetSpecialFolderPath(0, commonAppDataPath, CSIDL_COMMON_APPDATA, FALSE)) {
-       settingsPath = QString::fromWCharArray(commonAppDataPath)+QDir::separator()+
-               "QBroadcastMessenger"+QDir::separator();
-       if (!QDir(settingsPath).exists()) {
-           QDir(QString::fromWCharArray(commonAppDataPath)).mkpath(settingsPath);
-           }
-       }
-#endif
-
-    settings = new QSettings(settingsPath + "settings.ini", QSettings::IniFormat, this);
-
-    port = quint16(settings->value("network/port").toInt());
-    destinationIP = settings->value("network/ip").toString();
-    nickname = settings->value("personal/nickname").toString();
 }
 
 /**
@@ -67,6 +38,9 @@ void ConnectionManager::removeClient(Client *client) {
     refreshChatters();
 }
 
+/**
+ * @brief ConnectionManager::sendMessage
+ */
 void ConnectionManager::sendMessage(QString *) {
 
 }
@@ -183,7 +157,7 @@ void ConnectionManager::sendMessage(QString msg)
         sayHi();
         flag = false;
     }
-    udpSocket->writeDatagram((P_TYPE + sep + P_SENDMESSAGE + sep + QString::number(msg.length()) + sep + msg).toUtf8(), QHostAddress(destinationIP), port); //172.27.24.255 192.168.0.104
+    udpSocket->writeDatagram((P_TYPE + sep + P_SENDMESSAGE + sep + QString::number(msg.length()) + sep + msg).toUtf8(), QHostAddress(window->destinationIP), window->port); //172.27.24.255 192.168.0.104
 }
 
 /**
@@ -191,7 +165,7 @@ void ConnectionManager::sendMessage(QString msg)
  */
 void ConnectionManager::sayHi()
 {
-    udpSocket->writeDatagram((P_TYPE + sep + P_CONNECT + sep + QString::number(nickname.length()) + sep + nickname).toUtf8(), QHostAddress(destinationIP), port); //172.27.24.255 192.168.0.104
+    udpSocket->writeDatagram((P_TYPE + sep + P_CONNECT + sep + QString::number(window->nickname.length()) + sep + window->nickname).toUtf8(), QHostAddress(window->destinationIP), window->port); //172.27.24.255 192.168.0.104
 }
 
 /**
@@ -199,6 +173,6 @@ void ConnectionManager::sayHi()
  */
 void ConnectionManager::ping()
 {
-    udpSocket->writeDatagram((P_TYPE + sep + P_ALIVE + sep + QString::number(nickname.length()) + sep + nickname).toUtf8(), QHostAddress(destinationIP), port);
+    udpSocket->writeDatagram((P_TYPE + sep + P_ALIVE + sep + QString::number(window->nickname.length()) + sep + window->nickname).toUtf8(), QHostAddress(window->destinationIP), window->port);
 }
 

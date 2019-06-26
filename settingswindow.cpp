@@ -11,6 +11,7 @@ SettingsWindow::SettingsWindow(QSettings *settings, QWidget *parent=0): QDialog(
     portLineEdit = new QLineEdit();
     broadcastCheckBox = new QCheckBox();
     nickLineEdit = new QLineEdit();
+    defaultCheckBox = new QCheckBox();
 
     // Port validation
     portLineEdit->setValidator(new QIntValidator(1, 65535, this));
@@ -34,18 +35,22 @@ SettingsWindow::SettingsWindow(QSettings *settings, QWidget *parent=0): QDialog(
     gridLayout->addWidget(new QLabel(tr("Broadcast enabled")),3,0);
     gridLayout->addWidget(new QLabel(tr("Set default")),4,0);
 
-    gridLayout->addWidget(ipLineEdit,0,0);
-    gridLayout->addWidget(portLineEdit,0,1);
-    gridLayout->addWidget(nickLineEdit,0,2);
-    gridLayout->addWidget(broadcastCheckBox,0,3);
-    gridLayout->addWidget(defaultCheckBox,0,4);
+    gridLayout->addWidget(ipLineEdit,0,1);
+    gridLayout->addWidget(portLineEdit,1,1);
+    gridLayout->addWidget(nickLineEdit,2,1);
+    gridLayout->addWidget(broadcastCheckBox,3,1);
+    gridLayout->addWidget(defaultCheckBox,4,1);
 
     gridLayout->addWidget(okButton,5,0);
     gridLayout->addWidget(cancelButton,5,1);
 
     setLayout(gridLayout);
 
-    this->setFixedSize(QSize(400,400));
+    this->adjustSize();
+
+    connect(okButton,SIGNAL(clicked(bool)),this,SLOT(okClicked()));
+    connect(cancelButton,SIGNAL(clicked(bool)),this,SLOT(cancelClicked()));
+    connect(defaultCheckBox, SIGNAL(clicked(bool)), this, SLOT(defaultClicked(bool)));
 }
 
 void SettingsWindow::okClicked() {

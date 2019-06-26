@@ -7,7 +7,7 @@
 
 class SettingsWindow : public QDialog
 {
-        Q_OBJECT
+    Q_OBJECT
 public:
     SettingsWindow(QSettings *settings, QWidget *parent);
 private:
