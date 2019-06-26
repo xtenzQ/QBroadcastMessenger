@@ -6,6 +6,12 @@
 #include "settingswindow.h"
 #include "connectionmanager.h"
 
+#ifdef Q_OS_WIN32
+#define _WIN32_IE 0x0400
+#include <shlobj.h>
+#undef _WIN32_IE
+#endif
+
 class ConnectionManager;
 
 class MainWindow : public QMainWindow
@@ -18,6 +24,7 @@ public:
     QTextEdit *messageTextEdit;
     QListWidget *clientsListWidget;
     QTextEdit *messageLineEdit;
+    QPushButton *callButton;
     QSettings *settings;
 
     // nickname
@@ -32,10 +39,11 @@ private:
     QVBoxLayout *basicLayout;
     QHBoxLayout *chatLayout;
     QHBoxLayout *messageLayout;
+    QTabWidget *tabWidget;
     QMenuBar *menuBar;
     ConnectionManager *manager;
     QPushButton *sendButton;
-    QPushButton *callButton;
+    bool started;
     QWidget *bottomLine;
     QSplitter *chatSplitter;
     QSplitter *messageSplitter;
@@ -49,6 +57,7 @@ private slots:
     void clearMessageBox();
     void openSettings();
     void loadSettings();
+    void call();
 };
 
 #endif // MAINWINDOW_H

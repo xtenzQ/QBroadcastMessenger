@@ -51,6 +51,7 @@ SettingsWindow::SettingsWindow(QSettings *settings, QWidget *parent=0): QDialog(
     connect(okButton,SIGNAL(clicked(bool)),this,SLOT(okClicked()));
     connect(cancelButton,SIGNAL(clicked(bool)),this,SLOT(cancelClicked()));
     connect(defaultCheckBox, SIGNAL(clicked(bool)), this, SLOT(defaultClicked(bool)));
+    connect(broadcastCheckBox, SIGNAL(clicked(bool)), this, SLOT(broadcastClicked(bool)));
 }
 
 void SettingsWindow::okClicked() {
@@ -72,7 +73,7 @@ void SettingsWindow::defaultClicked(bool checked) {
         ipLineEdit->setText("172.27.24.255");
         portLineEdit->setText("14000");
         broadcastCheckBox->setChecked(true);
-        nickLineEdit->setText("KawaiiCat =^.^=");
+        nickLineEdit->setText("COMRADE");
     }
     else {
         ipLineEdit->clear();
@@ -80,4 +81,21 @@ void SettingsWindow::defaultClicked(bool checked) {
         broadcastCheckBox->setChecked(false);
         nickLineEdit->clear();
     }
+}
+
+void SettingsWindow::broadcastClicked(bool checked) {
+    /*if (checked & !(ipLineEdit->text().isEmpty())) {
+        QString ip = ipLineEdit->text();
+        int pos = 0;
+        for(int i = ip.length() - 1; i == 0 ; i--) {
+            if (ip[i] == '.') {
+                pos = i;
+                break;
+            }
+        }
+        //ipLineEdit->setText(QString::number(pos));
+        //ip.remove(pos + 1, ip.length() - pos);
+        //ipLineEdit->setText(ip);
+        //ipLineEdit->setText(ip.replace(pos + 1, 3, "255"));
+    }*/
 }

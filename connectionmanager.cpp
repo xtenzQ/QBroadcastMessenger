@@ -3,7 +3,6 @@
 ConnectionManager::ConnectionManager(MainWindow *window)
 {
     this->window = window;
-
     udpSocket = new QUdpSocket();
     udpSocket->bind(window->port, QUdpSocket::ShareAddress);
     connect(udpSocket, &QUdpSocket::readyRead, this, &ConnectionManager::datagramListener);
@@ -176,3 +175,53 @@ void ConnectionManager::ping()
     udpSocket->writeDatagram((P_TYPE + sep + P_ALIVE + sep + QString::number(window->nickname.length()) + sep + window->nickname).toUtf8(), QHostAddress(window->destinationIP), window->port);
 }
 
+void ConnectionManager::checkRet(bool ret,const MIPErrorBase &obj)
+{
+    if (!ret)
+    {
+       std::cerr << obj.getErrorString() << std::endl;
+        exit(-1);
+    }
+}
+
+void ConnectionManager::call()
+{
+#ifdef WIN32
+    WSADATA dat;
+    WSAStartup(MAKEWORD(2,2),&dat);
+#endif // WIN32
+#ifdef MIPCONFIG_SUPPORT_PORTAUDIO
+    std::string errStr;
+
+    if (!MIPPAInputOutput::initializePortAudio(errStr))
+    {
+        std::cerr << "Can't initialize PortAudio: " << errStr << std::endl;
+        return -1;
+    }
+#endif // MIPCONFIG_SUPPORT_PORTAUDIO
+    MIPAudioSessionParams Aparams;
+    bool ret;
+
+    int audioPort = 14002;
+
+    Aparams.setPortbase(audioPort);
+    Aparams.setSpeexIncomingPayloadType(97);
+    Aparams.setOpusIncomingPayloadType(98);
+
+    ret = audioSess.init(&Aparams);
+    checkRet(ret, audioSess);
+
+    //37.20.130.127
+    uint8_t ipLocal[4] = { 37, 20, 130, 127 };
+    ret = audioSess.addDestination(RTPIPv4Address(ipLocal, audioPort));
+}
+
+void ConnectionManager::hangup() {
+    audioSess.destroy();
+#ifdef MIPCONFIG_SUPPORT_PORTAUDIO
+    MIPPAInputOutput::terminatePortAudio();
+#endif // MIPCONFIG_SUPPORT_PORTAUDIO
+#ifdef WIN32
+    WSACleanup();
+#endif // WIN32
+}

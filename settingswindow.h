@@ -25,6 +25,7 @@ private slots:
     void okClicked();
     void cancelClicked();
     void defaultClicked(bool);
+    void broadcastClicked(bool);
 
 signals:
     void settingsChanged();

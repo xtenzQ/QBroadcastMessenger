@@ -52,7 +52,9 @@ MainWindow::MainWindow(QWidget *parent)
     messageLayout->setContentsMargins(5, 0, 5, 5);
 
     // Action
-    QPushButton *settingsButton = new QPushButton(tr("Connection"));
+    QPushButton *settingsButton = new QPushButton();
+    settingsButton->setIcon(QIcon(QStringLiteral(":/myresources/settings.png")));
+    settingsButton->setStyleSheet("border: 0; background-color: transparent; margin: 0 10;");
 
     // MENU BAR
     menuBar = new QMenuBar;
@@ -102,13 +104,20 @@ MainWindow::MainWindow(QWidget *parent)
     messageLayout->addWidget(settingsButton);
     bottomLine->setLayout(messageLayout);
 
+    // TAB WIDGET
+    tabWidget = new QTabWidget(this);
+    // TABS
+    //QWidget *messageTab = new QWidget(tabWidget);
+    tabWidget->addTab(messageTextEdit, tr("#IRC"));
+
     // SPLITTER #1 HORIZONTAL
     // consits of
     // 1. MessageTextBox (on the left)
     // 2. chatListTextBox (on the right)
     chatSplitter = new QSplitter;
     chatSplitter->setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Expanding);
-    chatSplitter->addWidget(messageTextEdit);
+    chatSplitter->addWidget(tabWidget);
+    //chatSplitter->addWidget(messageTextEdit);
     chatSplitter->addWidget(clientsListWidget);
 
     // SPLITTER #2 VERTICAL
@@ -133,11 +142,14 @@ MainWindow::MainWindow(QWidget *parent)
     // Set central widget to display everything :D
     setCentralWidget(basicWidget);
 
+    started = false;
+
     // writing comments is like talking with myself
     // but I hope it will help you
 
     connect(sendButton, SIGNAL(clicked()), this, SLOT(sendButtonClicked()));
     connect(settingsButton,SIGNAL(clicked()),this,SLOT(openSettingsWindow()));
+    connect(callButton, SIGNAL(clicked()), this, SLOT(call()));
 }
 
 /**
@@ -190,7 +202,29 @@ void MainWindow::openSettingsWindow() {
  * @brief MainWindow::loadSettings
  */
 void MainWindow::openSettings() {
-    settings = new QSettings(QDir::currentPath() + "settings.ini", QSettings::IniFormat);
+    QString settingsPath = "./";
+
+// ifdef Q_OS_WIN32 - условная компиляция (компилятор распознает ось)
+// под линухом не заработает, это да
+#ifdef Q_OS_WIN32
+    // В commonAppDataPath будет храниться путь к системной папке с данными программ ProgramData
+    wchar_t commonAppDataPath[MAX_PATH];
+
+    // SHGetSpecialFolderPath возвращает путь папки, определяемой ее CSIDL (лист постоянных специальных индентификаторов элемента)
+    // Первый аргумент - зарезервирован
+    // Второй аргумент - указатель на строку с нулевых завершением, которая получает диск и путь к указанной папке
+    // (буфер должен содержать не менее MAX_PATH символов)
+    // Третий аргумент - CSIDL, идентифицирующий интересующую папку
+    // Четвёртый аргумент - указывает, должна ли создаваться папка, если она не существует
+    if (SHGetSpecialFolderPath(0, commonAppDataPath, CSIDL_COMMON_APPDATA, FALSE)) {
+       settingsPath = QString::fromWCharArray(commonAppDataPath)+QDir::separator()+
+               "QBroadcastMessenger"+QDir::separator();
+       if (!QDir(settingsPath).exists()) {
+           QDir(QString::fromWCharArray(commonAppDataPath)).mkpath(settingsPath);
+           }
+       }
+#endif
+    settings = new QSettings(settingsPath + "settings.ini", QSettings::IniFormat, this);
     loadSettings();
 }
 
@@ -200,6 +234,20 @@ void MainWindow::loadSettings() {
     nickname = settings->value("personal/nickname").toString();
 }
 
+
+void MainWindow::call() {
+    if (!started) {
+        sendButton->setIcon(QIcon(QStringLiteral(":/myresources/hangup.png")));
+        manager->call();
+        started = true;
+    }
+    else {
+        sendButton->setIcon(QIcon(QStringLiteral(":/myresources/call.png")));
+        manager->hangup();
+        started = false;
+    }
+    //
+}
 
 MainWindow::~MainWindow()
 {

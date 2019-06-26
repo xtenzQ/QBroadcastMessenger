@@ -13,9 +13,9 @@ INCLUDEPATH += C:\libs\jrtplib\include
 INCLUDEPATH += C:\libs\jthread\include
 INCLUDEPATH += C:\libs\emiplib\include\emiplib
 
-LIBS += -L"C:\libs\jrtplib\lib" -llibjrtp
-LIBS += -L"C:\libs\jthread\lib" -llibjthread
-LIBS += -L"C:\libs\emiplib\lib" -llibemiplib
+LIBS += -L"C:\libs\jrtplib\lib" -ljrtp
+LIBS += -L"C:\libs\jthread\lib" -ljthread
+LIBS += -L"C:\libs\emiplib\lib" -lemiplib
 LIBS += -lws2_32
 
 TARGET = QBroadcastMessenger
@@ -40,14 +40,12 @@ SOURCES += \
     connectionmanager.cpp \
     client.cpp \
     settingswindow.cpp \
-    audiosessionmodule.cpp
 
 HEADERS += \
         mainwindow.h \
     connectionmanager.h \
     client.h \
     settingswindow.h \
-    audiosessionmodule.h
 
 # Default rules for deployment.
 qnx: target.path = /tmp/$${TARGET}/bin

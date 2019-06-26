@@ -1,10 +1,19 @@
 #ifndef CONNECTIONMANAGER_H
 #define CONNECTIONMANAGER_H
 
-#include "client.h"
-#include "mainwindow.h"
 #include <QtWidgets>
 #include <QtNetwork>
+#include <mipconfig.h>
+#include "mipavcodecencoder.h"
+#include <mipaudiosession.h>
+#include <mippainputoutput.h>
+#include <iostream>
+#include <jrtplib3/rtpipv4address.h>
+
+using namespace jrtplib;
+
+#include "client.h"
+#include "mainwindow.h"
 
 class MainWindow;
 class Client;
@@ -12,7 +21,7 @@ class Client;
 /*
  * @brief A concrete implementation of the Manager interface
  */
-class ConnectionManager : public QObject
+class ConnectionManager : public QObject, MIPAudioSession
 {
     Q_OBJECT
 
@@ -26,7 +35,8 @@ public slots:
     void removeClient(Client *client);
     void sendMessage(QString *message);
     void sendMessage(QString msg);
-
+    void call();
+    void hangup();
 
 private slots:
     void datagramListener();
@@ -34,8 +44,9 @@ private slots:
     void refreshChatters();
     void ping();
     void sayHi();
-
+    void checkRet(bool ret, const MIPErrorBase &obj);
     QString getNicknameByIP(QHostAddress address);
+
 private:
     MainWindow *window;
     QUdpSocket *udpSocket = nullptr;
@@ -50,8 +61,7 @@ private:
     const char sep = '_';
     bool flag = true;  
     QTimer *timer;
-
-
+    MIPAudioSession audioSess;
 };
 
 #endif // CONNECTIONMANAGER_H

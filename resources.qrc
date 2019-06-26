@@ -4,5 +4,7 @@
         <file alias="call.png">icons/call.png</file>
         <file alias="connection.png">icons/connection.png</file>
         <file alias="send.png">icons/send.png</file>
+        <file alias="settings.png">icons/settings.png</file>
+        <file alias="hangup.png">icons/phone-hangup.png</file>
     </qresource>
 </RCC>
