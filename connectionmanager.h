@@ -35,8 +35,29 @@ public slots:
     void removeClient(Client *client);
     void sendMessage(QString *message);
     void sendMessage(QString msg);
+    void sendPrivateMessage(QString msg);
     void call();
     void hangup();
+
+protected:
+    void onInputThreadExit(bool err, const std::string &compName, const std::string &errStr)
+    {
+        if (err)
+        {
+            qDebug() << "Input chain thread exited due to an error";
+            qDebug() << "Component: " << QString::fromStdString(compName);
+            qDebug() << "Error: " << QString::fromStdString(errStr);
+        }
+    }
+    void onOutputThreadExit(bool err, const std::string &compName, const std::string &errStr)
+    {
+        if (err)
+        {
+            qDebug() << "Output chain thread exited due to an error";
+            qDebug() << "Component: " << QString::fromStdString(compName);
+            qDebug() << "Error: " << QString::fromStdString(errStr);
+        }
+    }
 
 private slots:
     void datagramListener();
@@ -44,7 +65,7 @@ private slots:
     void refreshChatters();
     void ping();
     void sayHi();
-    void checkRet(bool ret, const MIPErrorBase &obj);
+    void checkRet(bool ret, MIPErrorBase *obj);
     QString getNicknameByIP(QHostAddress address);
 
 private:
@@ -61,7 +82,7 @@ private:
     const char sep = '_';
     bool flag = true;  
     QTimer *timer;
-    MIPAudioSession audioSess;
+    MIPAudioSession *audioSess;
 };
 
 #endif // CONNECTIONMANAGER_H

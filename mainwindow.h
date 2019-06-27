@@ -47,6 +47,7 @@ private:
     QWidget *bottomLine;
     QSplitter *chatSplitter;
     QSplitter *messageSplitter;
+
 public slots:
     void refreshUserList(QStringList *users);
     void addMessage(QString msg);

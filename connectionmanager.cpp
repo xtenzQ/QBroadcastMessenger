@@ -3,6 +3,7 @@
 ConnectionManager::ConnectionManager(MainWindow *window)
 {
     this->window = window;
+    audioSess = new MIPAudioSession();
     udpSocket = new QUdpSocket();
     udpSocket->bind(window->port, QUdpSocket::ShareAddress);
     connect(udpSocket, &QUdpSocket::readyRead, this, &ConnectionManager::datagramListener);
@@ -112,6 +113,13 @@ void ConnectionManager::datagramListener() {
                 if (lengthValidator(prLength, prPayload))
                 {
                     window->addMessage(tr("<%1 | %2> : %3").arg(getNicknameByIP(senderIP), QTime::currentTime().toString(), prPayload), Qt::black);
+
+                }
+            }
+            else if (prCommand == P_PRIVATEMSG) {
+                if (lengthValidator(prLength, prPayload))
+                {
+                    window->addMessage(tr("<From %1 | %2> : %3").arg(getNicknameByIP(senderIP), QTime::currentTime().toString(), prPayload), Qt::blue);
                 }
             }
             // if incoming datagram is a ping
@@ -160,6 +168,15 @@ void ConnectionManager::sendMessage(QString msg)
 }
 
 /**
+ * @brief ConnectionManager::sendPrivateMessage
+ * @param msg
+ */
+void ConnectionManager::sendPrivateMessage(QString msg)
+{
+    udpSocket->writeDatagram((P_TYPE + sep + P_PRIVATEMSG + sep + QString::number(msg.length()) + sep + msg).toUtf8(), QHostAddress(window->destinationIP), window->port); //172.27.24.255 192.168.0.104
+}
+
+/**
  * @brief ConnectionManager::sayHi
  */
 void ConnectionManager::sayHi()
@@ -175,12 +192,12 @@ void ConnectionManager::ping()
     udpSocket->writeDatagram((P_TYPE + sep + P_ALIVE + sep + QString::number(window->nickname.length()) + sep + window->nickname).toUtf8(), QHostAddress(window->destinationIP), window->port);
 }
 
-void ConnectionManager::checkRet(bool ret,const MIPErrorBase &obj)
+void ConnectionManager::checkRet(bool ret, MIPErrorBase *obj)
 {
     if (!ret)
     {
-       std::cerr << obj.getErrorString() << std::endl;
-        exit(-1);
+        qDebug() << QString::fromStdString(obj->getErrorString());
+        //exit(-1);
     }
 }
 
@@ -205,19 +222,18 @@ void ConnectionManager::call()
     int audioPort = 14002;
 
     Aparams.setPortbase(audioPort);
-    Aparams.setSpeexIncomingPayloadType(97);
-    Aparams.setOpusIncomingPayloadType(98);
+//    Aparams.setSpeexIncomingPayloadType(97);
+//    Aparams.setOpusIncomingPayloadType(98);
 
-    ret = audioSess.init(&Aparams);
+    ret = audioSess->init(&Aparams);
     checkRet(ret, audioSess);
-
-    //37.20.130.127
-    uint8_t ipLocal[4] = { 37, 20, 130, 127 };
-    ret = audioSess.addDestination(RTPIPv4Address(ipLocal, audioPort));
+    foreach (Client *client, clients) {
+        ret = audioSess->addDestination(RTPIPv4Address(client->getIP().toIPv4Address(), audioPort));
+    }
 }
 
 void ConnectionManager::hangup() {
-    audioSess.destroy();
+    audioSess->destroy();
 #ifdef MIPCONFIG_SUPPORT_PORTAUDIO
     MIPPAInputOutput::terminatePortAudio();
 #endif // MIPCONFIG_SUPPORT_PORTAUDIO

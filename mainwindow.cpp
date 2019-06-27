@@ -187,9 +187,30 @@ void MainWindow::refreshUserList(QStringList *users) {
 }
 
 void MainWindow::sendButtonClicked() {
+    /*QString msg = messageLineEdit->toPlainText();
+    int pos1 = 0;
+    int pos2 = 0;
+    for (int i = 0; i < msg.size(); i++) {
+        if (msg[i] == '@') {
+            pos1 = i;
+            break;
+        }
+        if (msg[i] == ',' && pos1 < pos2) {
+            pos2 = i;
+            break;
+        }
+    }
+    QString newStr = msg.mid(pos1, pos2-pos1);
+    foreach (QString user, manager->clients) {
+        if (user == newStr) {
+            manager->sendPrivateMessage(msg, user);
+            break;
+        }
+    }
+
     manager->sendMessage(messageLineEdit->toPlainText());
     addMessage(messageLineEdit->toPlainText(), Qt::black);
-    messageLineEdit->clear();
+    messageLineEdit->clear();*/
 }
 
 void MainWindow::openSettingsWindow() {
@@ -204,18 +225,8 @@ void MainWindow::openSettingsWindow() {
 void MainWindow::openSettings() {
     QString settingsPath = "./";
 
-// ifdef Q_OS_WIN32 - условная компиляция (компилятор распознает ось)
-// под линухом не заработает, это да
 #ifdef Q_OS_WIN32
-    // В commonAppDataPath будет храниться путь к системной папке с данными программ ProgramData
     wchar_t commonAppDataPath[MAX_PATH];
-
-    // SHGetSpecialFolderPath возвращает путь папки, определяемой ее CSIDL (лист постоянных специальных индентификаторов элемента)
-    // Первый аргумент - зарезервирован
-    // Второй аргумент - указатель на строку с нулевых завершением, которая получает диск и путь к указанной папке
-    // (буфер должен содержать не менее MAX_PATH символов)
-    // Третий аргумент - CSIDL, идентифицирующий интересующую папку
-    // Четвёртый аргумент - указывает, должна ли создаваться папка, если она не существует
     if (SHGetSpecialFolderPath(0, commonAppDataPath, CSIDL_COMMON_APPDATA, FALSE)) {
        settingsPath = QString::fromWCharArray(commonAppDataPath)+QDir::separator()+
                "QBroadcastMessenger"+QDir::separator();
@@ -233,7 +244,6 @@ void MainWindow::loadSettings() {
     destinationIP = settings->value("network/ip").toString();
     nickname = settings->value("personal/nickname").toString();
 }
-
 
 void MainWindow::call() {
     if (!started) {
