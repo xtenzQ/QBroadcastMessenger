@@ -31,6 +31,7 @@ public:
     QString nickname = "xtenzQ";
     // port
     quint16 port = 14000;
+    bool prt = false;
     // response time to ping
     const int responseTime = 2000;
     QString destinationIP = "127.0.0.1";

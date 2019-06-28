@@ -187,7 +187,7 @@ void MainWindow::refreshUserList(QStringList *users) {
 }
 
 void MainWindow::sendButtonClicked() {
-    /*QString msg = messageLineEdit->toPlainText();
+    QString msg = messageLineEdit->toPlainText();
     int pos1 = 0;
     int pos2 = 0;
     for (int i = 0; i < msg.size(); i++) {
@@ -195,22 +195,31 @@ void MainWindow::sendButtonClicked() {
             pos1 = i;
             break;
         }
+
+    }
+    for (int i = 0; i < msg.size(); i++) {
         if (msg[i] == ',' && pos1 < pos2) {
             pos2 = i;
             break;
         }
     }
-    QString newStr = msg.mid(pos1, pos2-pos1);
-    foreach (QString user, manager->clients) {
-        if (user == newStr) {
-            manager->sendPrivateMessage(msg, user);
+    QString newStr = msg.mid(pos1 + 1, pos2-pos1);
+    foreach (Client *user, manager->clients) {
+        if (user->getUsername() == newStr) {
+            manager->sendPrivateMessage(msg, user->getIP());
+            addMessage(messageLineEdit->toPlainText(), Qt::blue);
+            messageLineEdit->clear();
+            prt = true;
             break;
         }
     }
+    if (!prt) {
+        manager->sendMessage(messageLineEdit->toPlainText());
+        addMessage(messageLineEdit->toPlainText(), Qt::black);
+        messageLineEdit->clear();
+        prt = false;
+    }
 
-    manager->sendMessage(messageLineEdit->toPlainText());
-    addMessage(messageLineEdit->toPlainText(), Qt::black);
-    messageLineEdit->clear();*/
 }
 
 void MainWindow::openSettingsWindow() {
@@ -247,12 +256,12 @@ void MainWindow::loadSettings() {
 
 void MainWindow::call() {
     if (!started) {
-        sendButton->setIcon(QIcon(QStringLiteral(":/myresources/hangup.png")));
+        callButton->setIcon(QIcon(QStringLiteral(":/myresources/hangup.png")));
         manager->call();
         started = true;
     }
     else {
-        sendButton->setIcon(QIcon(QStringLiteral(":/myresources/call.png")));
+        callButton->setIcon(QIcon(QStringLiteral(":/myresources/call.png")));
         manager->hangup();
         started = false;
     }

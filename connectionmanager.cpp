@@ -3,7 +3,6 @@
 ConnectionManager::ConnectionManager(MainWindow *window)
 {
     this->window = window;
-    audioSess = new MIPAudioSession();
     udpSocket = new QUdpSocket();
     udpSocket->bind(window->port, QUdpSocket::ShareAddress);
     connect(udpSocket, &QUdpSocket::readyRead, this, &ConnectionManager::datagramListener);
@@ -18,7 +17,8 @@ ConnectionManager::ConnectionManager(MainWindow *window)
  * @param client IClient entity
  */
 void ConnectionManager::addClient(Client *client) {
-    clients.push_back(client);
+    //clients.push_back(client);
+    hosts.insert(client->getIP(), client);
     refreshChatters();
 }
 
@@ -27,15 +27,20 @@ void ConnectionManager::addClient(Client *client) {
  * @param client IClient entity
  */
 void ConnectionManager::removeClient(Client *client) {
-
+/*
     auto iterator = std::find(clients.begin(), clients.end(), client);
 
     if (iterator != clients.end()) { // client found
         clients.erase(iterator); // remove client
     }
 
-    window->addMessage(tr("%1 left chat").arg(client->getUsername()), Qt::gray);
-    refreshChatters();
+*/
+    if (hosts.contains(client->getIP())) {
+        hosts.remove(client->getIP());
+        window->addMessage(tr("%1 left chat").arg(client->getUsername()), Qt::gray);
+        refreshChatters();
+    }
+
 }
 
 /**
@@ -63,7 +68,7 @@ QString ConnectionManager::getNicknameByIP(QHostAddress address) {
  * @return true if equal
  */
 bool ConnectionManager::lengthValidator(int length, QString string) {
-    return (length == string.length()) ? true : false;
+    return (length == string.toUtf8().size()) ? true : false;
 }
 
 /**
@@ -82,7 +87,6 @@ void ConnectionManager::datagramListener() {
         udpSocket->readDatagram(datagram.data(), datagram.size(), &senderIP, &port);
         // gets pointer to data stored in datagram byte array
         QString data = datagram.constData();
-
         // parse string to use data further
         // prName - protocol name
         // prCommand - command type
@@ -92,6 +96,7 @@ void ConnectionManager::datagramListener() {
         QString prCommand = data.split(sep)[1];
         int prLength = data.split(sep)[2].toInt();
         QString prPayload = data.split(sep)[3];
+        QHostAddress finalAddress = QHostAddress(senderIP.toIPv4Address());
 
         // Check block
         // Checking protocol name first
@@ -102,7 +107,7 @@ void ConnectionManager::datagramListener() {
             {
                 if (lengthValidator(prLength, prPayload)) {
                     // add client to QHash
-                    new Client(this, prPayload, senderIP);
+                    new Client(this, prPayload, finalAddress);
                     window->addMessage(tr("%1 has joined").arg(prPayload), Qt::gray);
                     refreshChatters();
                 }
@@ -112,31 +117,33 @@ void ConnectionManager::datagramListener() {
             {
                 if (lengthValidator(prLength, prPayload))
                 {
-                    window->addMessage(tr("<%1 | %2> : %3").arg(getNicknameByIP(senderIP), QTime::currentTime().toString(), prPayload), Qt::black);
+                    window->addMessage(tr("<%1 | %2> : %3").arg(getNicknameByIP(finalAddress), QTime::currentTime().toString(), prPayload), Qt::black);
 
                 }
             }
             else if (prCommand == P_PRIVATEMSG) {
                 if (lengthValidator(prLength, prPayload))
                 {
-                    window->addMessage(tr("<From %1 | %2> : %3").arg(getNicknameByIP(senderIP), QTime::currentTime().toString(), prPayload), Qt::blue);
+                    window->addMessage(tr("<From %1 | %2> : %3").arg(getNicknameByIP(finalAddress), QTime::currentTime().toString(), prPayload), Qt::blue);
                 }
             }
             // if incoming datagram is a ping
             else if (prCommand == P_ALIVE) {
                 if (lengthValidator(prLength, prPayload)) {
-                    foreach (Client *client, clients) {
-                        if (client->getIP() == senderIP) {
-                            client->resetTimer();
+                    for (int i = 0; i < hosts.size(); i++) {
+                        if (hosts.contains(finalAddress)) {
+                            hosts[finalAddress]->resetTimer();
+                        }
+                        else {
+                            new Client(this, prPayload, finalAddress);
+                            window->addMessage(tr("%1 in chat").arg(prPayload), Qt::gray);
+                            refreshChatters();
                         }
                     }
                 }
                 // or add new client to list and show him in chat
-                else {
-                    new Client(this, prPayload, senderIP);
-                    window->addMessage(tr("%1 in chat").arg(prPayload), Qt::gray);
-                    refreshChatters();
-                }
+
+
             }
         }
     }
@@ -147,9 +154,10 @@ void ConnectionManager::datagramListener() {
  */
 void ConnectionManager::refreshChatters() {
     QStringList *list = new QStringList;
-    foreach (Client *client, clients)
-    {
-        list->append(client->getUsername());
+    QHashIterator<QHostAddress, Client *> it(hosts);
+    while (it.hasNext()) {
+        it.next();
+        list->append(hosts[it.key()]->getUsername());
     }
     window->refreshUserList(list);
 }
@@ -164,16 +172,16 @@ void ConnectionManager::sendMessage(QString msg)
         sayHi();
         flag = false;
     }
-    udpSocket->writeDatagram((P_TYPE + sep + P_SENDMESSAGE + sep + QString::number(msg.length()) + sep + msg).toUtf8(), QHostAddress(window->destinationIP), window->port); //172.27.24.255 192.168.0.104
+    udpSocket->writeDatagram((P_TYPE + sep + P_SENDMESSAGE + sep + QString::number(msg.toUtf8().size()) + sep + msg).toUtf8(), QHostAddress(window->destinationIP), window->port); //172.27.24.255 192.168.0.104
 }
 
 /**
  * @brief ConnectionManager::sendPrivateMessage
  * @param msg
  */
-void ConnectionManager::sendPrivateMessage(QString msg)
+void ConnectionManager::sendPrivateMessage(QString msg, QHostAddress address)
 {
-    udpSocket->writeDatagram((P_TYPE + sep + P_PRIVATEMSG + sep + QString::number(msg.length()) + sep + msg).toUtf8(), QHostAddress(window->destinationIP), window->port); //172.27.24.255 192.168.0.104
+    udpSocket->writeDatagram((P_TYPE + sep + P_PRIVATEMSG + sep + QString::number(msg.toUtf8().size()) + sep + msg).toUtf8(), QHostAddress(address), window->port); //172.27.24.255 192.168.0.104
 }
 
 /**
@@ -181,7 +189,7 @@ void ConnectionManager::sendPrivateMessage(QString msg)
  */
 void ConnectionManager::sayHi()
 {
-    udpSocket->writeDatagram((P_TYPE + sep + P_CONNECT + sep + QString::number(window->nickname.length()) + sep + window->nickname).toUtf8(), QHostAddress(window->destinationIP), window->port); //172.27.24.255 192.168.0.104
+    udpSocket->writeDatagram((P_TYPE + sep + P_CONNECT + sep + QString::number(window->nickname.toUtf8().size()) + sep + window->nickname).toUtf8(), QHostAddress(window->destinationIP), window->port); //172.27.24.255 192.168.0.104
 }
 
 /**
@@ -189,15 +197,15 @@ void ConnectionManager::sayHi()
  */
 void ConnectionManager::ping()
 {
-    udpSocket->writeDatagram((P_TYPE + sep + P_ALIVE + sep + QString::number(window->nickname.length()) + sep + window->nickname).toUtf8(), QHostAddress(window->destinationIP), window->port);
+    udpSocket->writeDatagram((P_TYPE + sep + P_ALIVE + sep + QString::number(window->nickname.toUtf8().size()) + sep + window->nickname).toUtf8(), QHostAddress(window->destinationIP), window->port);
 }
 
-void ConnectionManager::checkRet(bool ret, MIPErrorBase *obj)
+void ConnectionManager::checkRet(bool ret,const MIPErrorBase &obj)
 {
     if (!ret)
     {
-        qDebug() << QString::fromStdString(obj->getErrorString());
-        //exit(-1);
+       std::cerr << obj.getErrorString() << std::endl;
+        exit(-1);
     }
 }
 
@@ -222,18 +230,21 @@ void ConnectionManager::call()
     int audioPort = 14002;
 
     Aparams.setPortbase(audioPort);
-//    Aparams.setSpeexIncomingPayloadType(97);
-//    Aparams.setOpusIncomingPayloadType(98);
+    Aparams.setSpeexIncomingPayloadType(97);
+    Aparams.setOpusIncomingPayloadType(98);
 
-    ret = audioSess->init(&Aparams);
+    ret = audioSess.init(&Aparams);
     checkRet(ret, audioSess);
-    foreach (Client *client, clients) {
-        ret = audioSess->addDestination(RTPIPv4Address(client->getIP().toIPv4Address(), audioPort));
+
+    QHashIterator<QHostAddress, Client *> it(hosts);
+    while (it.hasNext()) {
+        it.next();
+        ret = audioSess.addDestination(RTPIPv4Address(it.key().toIPv4Address(), audioPort));
     }
 }
 
 void ConnectionManager::hangup() {
-    audioSess->destroy();
+    audioSess.destroy();
 #ifdef MIPCONFIG_SUPPORT_PORTAUDIO
     MIPPAInputOutput::terminatePortAudio();
 #endif // MIPCONFIG_SUPPORT_PORTAUDIO
@@ -241,3 +252,4 @@ void ConnectionManager::hangup() {
     WSACleanup();
 #endif // WIN32
 }
+

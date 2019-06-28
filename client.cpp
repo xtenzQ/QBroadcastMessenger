@@ -13,6 +13,8 @@ Client::Client(ConnectionManager *manager, QString username, QHostAddress addres
     this->address = address;
     this->manager = manager;
 
+
+
     // add client to list
     this->manager->addClient(this);
 
