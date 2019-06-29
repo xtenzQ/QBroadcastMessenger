@@ -146,7 +146,6 @@ MainWindow::MainWindow(QWidget *parent)
     privateMsg = false;
 
     clientsListWidget->addItem("All");
-
     // writing comments is like talking with myself
     // but I hope it will help you
 
@@ -187,7 +186,7 @@ void MainWindow::addMessage(QString msg) {
  */
 void MainWindow::addMessage(QString msg, QColor color) {
     messageTextEdit->setTextColor(color);
-    messageTextEdit->append(msg);
+    messageTextEdit->append(tr("<%1 | %2> : %3").arg(nickname, QTime::currentTime().toString(), msg));
 }
 
 /**
@@ -209,10 +208,12 @@ void MainWindow::refreshUserList(QStringList *users) {
 void MainWindow::sendButtonClicked() {
     if (privateMsg) {
         manager->sendPrivateMessage(messageLineEdit->toPlainText(), manager->getIPbyNickname(currentItem->text()));
-        addMessage(messageLineEdit->toPlainText(), Qt::blue);
+        messageLineEdit->setTextColor(Qt::blue);
+        addMessage("to " + currentItem->text() + " " + messageLineEdit->toPlainText(), Qt::blue);
     }
     else {
         manager->sendMessage(messageLineEdit->toPlainText());
+        messageLineEdit->setTextColor(Qt::black);
         addMessage(messageLineEdit->toPlainText(), Qt::black);
     }
     messageLineEdit->clear();

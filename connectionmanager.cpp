@@ -86,6 +86,7 @@ void ConnectionManager::datagramListener() {
         // reads datagram
         udpSocket->readDatagram(datagram.data(), datagram.size(), &senderIP, &port);
         // gets pointer to data stored in datagram byte array
+
         QString data = datagram.constData();
         // parse string to use data further
         // prName - protocol name
@@ -123,7 +124,7 @@ void ConnectionManager::datagramListener() {
             else if (prCommand == P_PRIVATEMSG) {
                 if (lengthValidator(prLength, prPayload))
                 {
-                    window->addMessage(tr("<From %1 | %2> : %3").arg(getNicknameByIP(finalAddress), QTime::currentTime().toString(), prPayload), Qt::blue);
+                    window->addMessage(tr("<from %1 | %2> : %3").arg(getNicknameByIP(finalAddress), QTime::currentTime().toString(), prPayload), Qt::blue);
                 }
             }
             // if incoming datagram is a ping
