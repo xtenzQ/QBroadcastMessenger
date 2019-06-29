@@ -143,6 +143,9 @@ MainWindow::MainWindow(QWidget *parent)
     setCentralWidget(basicWidget);
 
     started = false;
+    privateMsg = false;
+
+    clientsListWidget->addItem("All");
 
     // writing comments is like talking with myself
     // but I hope it will help you
@@ -150,6 +153,23 @@ MainWindow::MainWindow(QWidget *parent)
     connect(sendButton, SIGNAL(clicked()), this, SLOT(sendButtonClicked()));
     connect(settingsButton,SIGNAL(clicked()),this,SLOT(openSettingsWindow()));
     connect(callButton, SIGNAL(clicked()), this, SLOT(call()));
+    connect(clientsListWidget, SIGNAL(itemClicked(QListWidgetItem*)), this, SLOT(onListItemClicked(QListWidgetItem*)));
+}
+
+
+/**
+ * @brief MainWindow::onListMailItemClicked
+ * @param item
+ */
+void MainWindow::onListItemClicked(QListWidgetItem* item)
+{
+    if (item->text() == "All") {
+        privateMsg = false;
+    }
+    else {
+        privateMsg = true;
+        currentItem = item;
+    }
 }
 
 /**
@@ -187,39 +207,15 @@ void MainWindow::refreshUserList(QStringList *users) {
 }
 
 void MainWindow::sendButtonClicked() {
-    QString msg = messageLineEdit->toPlainText();
-    int pos1 = 0;
-    int pos2 = 0;
-    for (int i = 0; i < msg.size(); i++) {
-        if (msg[i] == '@') {
-            pos1 = i;
-            break;
-        }
-
+    if (privateMsg) {
+        manager->sendPrivateMessage(messageLineEdit->toPlainText(), manager->getIPbyNickname(currentItem->text()));
+        addMessage(messageLineEdit->toPlainText(), Qt::blue);
     }
-    for (int i = 0; i < msg.size(); i++) {
-        if (msg[i] == ',' && pos1 < pos2) {
-            pos2 = i;
-            break;
-        }
-    }
-    QString newStr = msg.mid(pos1 + 1, pos2-pos1);
-    foreach (Client *user, manager->clients) {
-        if (user->getUsername() == newStr) {
-            manager->sendPrivateMessage(msg, user->getIP());
-            addMessage(messageLineEdit->toPlainText(), Qt::blue);
-            messageLineEdit->clear();
-            prt = true;
-            break;
-        }
-    }
-    if (!prt) {
+    else {
         manager->sendMessage(messageLineEdit->toPlainText());
         addMessage(messageLineEdit->toPlainText(), Qt::black);
-        messageLineEdit->clear();
-        prt = false;
     }
-
+    messageLineEdit->clear();
 }
 
 void MainWindow::openSettingsWindow() {
@@ -244,6 +240,7 @@ void MainWindow::openSettings() {
            }
        }
 #endif
+
     settings = new QSettings(settingsPath + "settings.ini", QSettings::IniFormat, this);
     loadSettings();
 }

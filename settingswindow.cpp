@@ -3,6 +3,7 @@
 SettingsWindow::SettingsWindow(QSettings *settings, QWidget *parent=0): QDialog(parent)
 {
     this->settings = settings;
+
     setModal(true);
     setWindowTitle(tr("Settings"));
     setAttribute(Qt::WA_DeleteOnClose);
@@ -47,6 +48,10 @@ SettingsWindow::SettingsWindow(QSettings *settings, QWidget *parent=0): QDialog(
     setLayout(gridLayout);
 
     this->adjustSize();
+
+    ipLineEdit->setText(settings->value("network/port").toString());
+    portLineEdit->setText(settings->value("network/ip").toString());
+    nickLineEdit->setText(settings->value("personal/nickname").toString());
 
     connect(okButton,SIGNAL(clicked(bool)),this,SLOT(okClicked()));
     connect(cancelButton,SIGNAL(clicked(bool)),this,SLOT(cancelClicked()));

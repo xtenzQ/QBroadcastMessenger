@@ -45,9 +45,11 @@ private:
     ConnectionManager *manager;
     QPushButton *sendButton;
     bool started;
+    bool privateMsg;
     QWidget *bottomLine;
     QSplitter *chatSplitter;
     QSplitter *messageSplitter;
+    QListWidgetItem *currentItem;
 
 public slots:
     void refreshUserList(QStringList *users);
@@ -56,6 +58,7 @@ public slots:
 private slots:
     void sendButtonClicked();
     void openSettingsWindow();
+    void onListItemClicked(QListWidgetItem* item);
     void clearMessageBox();
     void openSettings();
     void loadSettings();

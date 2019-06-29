@@ -27,18 +27,16 @@ class ConnectionManager : public QObject, MIPAudioSession
 
 public:
     ConnectionManager(MainWindow *window);
-    // clients
-    QVector<Client *> clients;
     QHash<QHostAddress, Client *> hosts;
 
 public slots:
     void addClient(Client *client);
     void removeClient(Client *client);
-    void sendMessage(QString *message);
     void sendMessage(QString msg);
     void sendPrivateMessage(QString msg, QHostAddress address);
     void call();
     void hangup();
+    QHostAddress getIPbyNickname(QString nickname);
 
 private slots:
     void datagramListener();
@@ -64,6 +62,7 @@ private:
     bool flag = true;  
     QTimer *timer;
     MIPAudioSession audioSess;
+    QHostAddress privateAddress;
 };
 
 #endif // CONNECTIONMANAGER_H

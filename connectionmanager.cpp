@@ -27,14 +27,6 @@ void ConnectionManager::addClient(Client *client) {
  * @param client IClient entity
  */
 void ConnectionManager::removeClient(Client *client) {
-/*
-    auto iterator = std::find(clients.begin(), clients.end(), client);
-
-    if (iterator != clients.end()) { // client found
-        clients.erase(iterator); // remove client
-    }
-
-*/
     if (hosts.contains(client->getIP())) {
         hosts.remove(client->getIP());
         window->addMessage(tr("%1 left chat").arg(client->getUsername()), Qt::gray);
@@ -43,22 +35,30 @@ void ConnectionManager::removeClient(Client *client) {
 
 }
 
-/**
- * @brief ConnectionManager::sendMessage
- */
-void ConnectionManager::sendMessage(QString *) {
-
-}
-
 QString ConnectionManager::getNicknameByIP(QHostAddress address) {
     QString nick;
-    foreach (Client *client, clients) {
-        if (client->getIP() == address) {
-            nick = client->getUsername();
+    QHashIterator<QHostAddress, Client *> it(hosts);
+    while (it.hasNext()) {
+        it.next();
+        if (it.key() == address) {
+            nick = it.value()->getUsername();
             break;
         }
     }
     return nick;
+}
+
+QHostAddress ConnectionManager::getIPbyNickname(QString nickname) {
+    QHostAddress ip;
+    QHashIterator<QHostAddress, Client *> it(hosts);
+    while (it.hasNext()) {
+        it.next();
+        if (it.value()->getUsername() == nickname) {
+            ip = it.key();
+            break;
+        }
+    }
+    return ip;
 }
 
 /**
@@ -118,7 +118,6 @@ void ConnectionManager::datagramListener() {
                 if (lengthValidator(prLength, prPayload))
                 {
                     window->addMessage(tr("<%1 | %2> : %3").arg(getNicknameByIP(finalAddress), QTime::currentTime().toString(), prPayload), Qt::black);
-
                 }
             }
             else if (prCommand == P_PRIVATEMSG) {
