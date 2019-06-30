@@ -49,8 +49,8 @@ SettingsWindow::SettingsWindow(QSettings *settings, QWidget *parent=0): QDialog(
 
     this->adjustSize();
 
-    ipLineEdit->setText(settings->value("network/port").toString());
-    portLineEdit->setText(settings->value("network/ip").toString());
+    ipLineEdit->setText(settings->value("network/ip").toString());
+    portLineEdit->setText(settings->value("network/port").toString());
     nickLineEdit->setText(settings->value("personal/nickname").toString());
 
     connect(okButton,SIGNAL(clicked(bool)),this,SLOT(okClicked()));

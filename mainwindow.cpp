@@ -145,7 +145,9 @@ MainWindow::MainWindow(QWidget *parent)
     started = false;
     privateMsg = false;
 
-    clientsListWidget->addItem("All");
+    QListWidgetItem *item = new QListWidgetItem();
+    item->setText("All");
+    clientsListWidget->addItem(item);
     // writing comments is like talking with myself
     // but I hope it will help you
 
@@ -202,6 +204,9 @@ void MainWindow::clearMessageBox() {
  */
 void MainWindow::refreshUserList(QStringList *users) {
     clientsListWidget->clear();
+    QListWidgetItem *item = new QListWidgetItem();
+    item->setText("All");
+    clientsListWidget->addItem(item);
     clientsListWidget->addItems(*users);
 }
 
