@@ -1,5 +1,5 @@
 # 📨 QBroadcastMessenger
-Messenger which uses broadcasting to send messages.
+Messenger which uses UDP boradcast to send messages.
 The application is developed as university project at [Irkutsk National Research Techincal University](http://www.istu.edu/eng/).
 
 ## Contents
