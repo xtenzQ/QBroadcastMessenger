@@ -16,6 +16,11 @@ The application is developed as university project at [Irkutsk National Research
 
 ## Installation
 
+Simply clone it:
+```
+git://github.com/xtenzQ/QBroadcastMessenger.git
+```
+
 To run application you need `EMIPLIB` library (for calls), which can be build with `CMAKE` or you can use prebuild libraries (I will put link later).
 Put `libs` in `C:/` folder (or anywhere you want but don't forget to change path) and then add to your `.pro`-file following strokes:
 ```Cpp
